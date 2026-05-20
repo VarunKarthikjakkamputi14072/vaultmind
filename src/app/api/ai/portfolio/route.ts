@@ -49,7 +49,7 @@ export async function POST(request: Request) {
 
   try {
     const { text } = await generateText({
-      model: google('gemini-1.5-flash'),
+      model: google('gemini-1.5-flash-latest'),
       system: SYSTEM_PROMPTS.TREASURY_ANALYST,
       prompt: `Analyze this treasury portfolio. Top assets: ${topTokens.join(', ')}. Risk Score: ${riskProfile.score}/100 (${riskProfile.level}). Provide a 2-sentence strategic recommendation.`,
     });
