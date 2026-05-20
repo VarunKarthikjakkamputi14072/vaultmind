@@ -31,9 +31,12 @@ export async function GET(request: Request) {
     });
     if (!res.ok) throw new Error(`Portals failed: ${res.statusText}`);
     const data = await res.json();
-    return (data.balances || []).map((t: any) => ({
-      name: t.name, symbol: t.symbol, decimals: t.decimals, balance: t.rawBalance || String(Math.floor(t.balance * (10 ** t.decimals))), usd_value: t.balanceUSD, chain: t.network
-    }));
+    return (data.balances || []).map((t: unknown) => {
+      const token = t as { name: string, symbol: string, decimals: number, rawBalance: string, balance: number, balanceUSD: number, network: string };
+      return {
+        name: token.name, symbol: token.symbol, decimals: token.decimals, balance: token.rawBalance || String(Math.floor(token.balance * (10 ** token.decimals))), usd_value: token.balanceUSD, chain: token.network
+      };
+    });
   };
 
   const fetchMoralis = async (wallet: string) => {
@@ -45,6 +48,7 @@ export async function GET(request: Request) {
       });
       if (!res.ok) return [];
       const data = await res.json();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (data.result || []).map((t: any) => ({ ...t, chain: c.name }));
     });
     const results = await Promise.all(promises);
@@ -62,6 +66,7 @@ export async function GET(request: Request) {
     if (!res.ok) throw new Error("Bitquery failed");
     const data = await res.json();
     const balances = data.data?.ethereum?.address?.[0]?.balances || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return balances.map((b: any) => ({
       name: b.currency.name, symbol: b.currency.symbol, decimals: b.currency.decimals, balance: String(Math.floor(b.value * (10 ** b.currency.decimals))), usd_value: 0, chain: 'Ethereum'
     }));
@@ -104,8 +109,8 @@ export async function GET(request: Request) {
       const tokens = await provider.fn(walletAddress);
       console.log(`${provider.name} succeeded!`);
       return NextResponse.json({ result: tokens });
-    } catch (error: any) {
-      console.warn(`${provider.name} failed: ${error.message}. Falling back...`);
+    } catch (error: unknown) {
+      console.warn(`${provider.name} failed: ${(error as Error).message}. Falling back...`);
     }
   }
 

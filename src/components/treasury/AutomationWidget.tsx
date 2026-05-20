@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { Bot } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const cardVariants = {
@@ -36,15 +35,15 @@ export function AutomationWidget({ tokens, activeAddress }: { tokens: Record<str
 
   if (!activeAddress) return null;
 
-  let parsedStrategies: any[] = [];
+  let parsedStrategies: Record<string, string>[] = [];
   if (suggestions) {
     if (typeof suggestions === 'object') {
-      parsedStrategies = (suggestions as any).strategies || [];
+      parsedStrategies = (suggestions as Record<string, Record<string, string>[]>).strategies || [];
     } else if (typeof suggestions === 'string') {
       try {
         const cleaned = suggestions.replace(/```json/g, '').replace(/```/g, '').trim();
         parsedStrategies = JSON.parse(cleaned).strategies || [];
-      } catch (e) {
+      } catch {
         // fallback
       }
     }

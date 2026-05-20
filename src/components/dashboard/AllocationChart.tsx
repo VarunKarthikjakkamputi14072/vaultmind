@@ -1,5 +1,5 @@
 'use client'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 
@@ -10,6 +10,7 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' as const } }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const renderCustomBarLabel = (props: any, symbol: string) => {
   const { x, y, width, height, value } = props;
   if (!value || width < 50) return null; // hide label if the box is too narrow
@@ -20,14 +21,16 @@ const renderCustomBarLabel = (props: any, symbol: string) => {
   );
 };
 
-export function AllocationChart({ tokens, totalUSD }: { tokens: Record<string, unknown>[], totalUSD: number }) {
+export function AllocationChart({ tokens }: { tokens: Record<string, unknown>[], totalUSD?: number }) {
   
   const { chartData, allSymbols } = useMemo(() => {
     // 1. Group by network (chain)
-    const networks: Record<string, any> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const networks: Record<string, Record<string, any>> = {};
     const symbols = new Set<string>();
 
-    tokens.forEach((t: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tokens.forEach((t: Record<string, any>) => {
       const chain = (t.chain || 'Unknown').toUpperCase();
       const symbol = t.symbol || 'UNK';
       const value = parseFloat(t.usd_value) || 0;
@@ -70,6 +73,7 @@ export function AllocationChart({ tokens, totalUSD }: { tokens: Record<string, u
               />
               <Tooltip
                 cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 formatter={(value: any, name: any) => [`$${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, name]}
                 contentStyle={{ background: 'var(--bg-elevated)', border: '3px solid var(--bg-border)', borderRadius: 0, boxShadow: '4px 4px 0 0 rgba(0,0,0,1)', fontWeight: 'bold' }}
               />
