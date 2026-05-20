@@ -40,6 +40,12 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Left Sidebar */}
           <div className="space-y-6 lg:col-span-1">
+            <div className="bg-[--bg-elevated] border-[3px] border-[--bg-border] p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
+              <p className="text-sm text-[--text-secondary] mb-2 uppercase font-bold tracking-wider">Total Net Worth</p>
+              <p className="text-4xl font-black text-[--text-primary]">
+                ${netWorth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+            </div>
             <AllowanceManager />
             <BatchSend />
           </div>
