@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-echo '=== ChainVault Validation Pipeline ==='
+echo '=== VaultMind Validation Pipeline ==='
 
 echo '[1/5] TypeScript strict type check...'
 npx tsc --noEmit

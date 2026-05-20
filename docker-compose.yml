@@ -3,16 +3,16 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    container_name: chainvault-postgres
+    container_name: vaultmind-postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: chainvault
+      POSTGRES_DB: vaultmind
     ports:
       - '5432:5432'
     volumes:
-      - chainvault_pgdata:/var/lib/postgresql/data
+      - vaultmind_pgdata:/var/lib/postgresql/data
 
 volumes:
-  chainvault_pgdata:
+  vaultmind_pgdata:
