@@ -24,12 +24,11 @@ export async function generateTextWaterfall({ system, prompt }: { system: string
   const providers = [
     { name: 'Groq', model: groq?.('llama-3.3-70b-versatile') },
     { name: 'Gemini', model: google?.('gemini-2.5-flash') },
-    { name: 'Cohere', model: cohere?.('command-a-plus-05-2026') },
-    { name: 'OpenRouter', model: openrouter?.('mistralai/mistral-7b-instruct:free') }
+    { name: 'Cohere', model: cohere?.('command-r-plus-08-2024') },
+    { name: 'OpenRouter', model: openrouter?.('meta-llama/llama-3.3-70b-instruct:free') }
   ];
 
-  let lastError: any = null;
-  let attemptCount = 0;
+  let lastError: unknown = null;
 
   for (const provider of providers) {
     if (!provider.model) {
@@ -40,16 +39,17 @@ export async function generateTextWaterfall({ system, prompt }: { system: string
     try {
       console.log(`[AI Waterfall] Attempting generation with ${provider.name}...`);
       const { text } = await generateText({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         model: provider.model as any,
         system: system,
         prompt: prompt,
       });
       console.log(`[AI Waterfall] Success with ${provider.name}!`);
       return { success: true, content: text };
-    } catch (e: any) {
-      console.error(`[AI Waterfall] ${provider.name} failed:`, e?.message || e);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error(`[AI Waterfall] ${provider.name} failed:`, msg);
       lastError = e;
-      attemptCount++;
     }
   }
 

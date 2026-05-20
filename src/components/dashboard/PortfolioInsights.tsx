@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Sparkles, ShieldAlert } from 'lucide-react'
+import { ShieldAlert } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const cardVariants = {
@@ -44,7 +44,7 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
 
   if (!activeAddress) return null;
 
-  let parsedInsight: any = null;
+  let parsedInsight: Record<string, string> | null = null;
   if (insight) {
     if (typeof insight === 'object') {
       parsedInsight = insight;
@@ -52,7 +52,7 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
       try {
         const cleaned = insight.replace(/```json/g, '').replace(/```/g, '').trim();
         parsedInsight = JSON.parse(cleaned);
-      } catch (e) {
+      } catch {
         // fallback to raw text
       }
     }
