@@ -88,7 +88,7 @@ export function AutomationWidget({ tokens, activeAddress }: { tokens: Record<str
                   </div>
                   <p className="text-sm text-black mb-3">{s.description}</p>
                   <div className="bg-[#eecb46] border-[3px] border-black p-2 text-xs font-mono font-bold text-black">
-                    > {s.action}
+                    {'>'} {s.action}
                   </div>
                 </div>
               ))
