@@ -11,6 +11,6 @@ export const config = createConfig(
       [arbitrum.id]: http(),
     },
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'test_id',
-    appName: 'ChainVault',
+    appName: 'VaultMind',
   }),
 )
