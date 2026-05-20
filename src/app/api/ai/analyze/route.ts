@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
   try {
     const { text } = await generateText({
-      model: google('gemini-1.5-flash-latest'),
+      model: google('gemini-2.5-flash'),
       system: SYSTEM_PROMPTS.TREASURY_ANALYST,
       prompt: `${buildTradeAnalysisPrompt(quoteData)}\nMEV Risk Score: ${mevRisk.vulnerabilityScore}/100. ${mevRisk.recommendation}`,
     });
