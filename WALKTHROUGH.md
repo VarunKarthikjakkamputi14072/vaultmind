@@ -1,15 +1,15 @@
-# ChainVault Architecture Walkthrough
+# VaultMind Architecture Walkthrough
 
-Welcome to the ChainVault architectural walkthrough. This document is designed to give you a complete, top-to-bottom understanding of how this project works, why specific technologies were chosen, and how data flows between the frontend, the backend proxy, the AI models, and the blockchain.
+Welcome to the VaultMind architectural walkthrough. This document is designed to give you a complete, top-to-bottom understanding of how this project works, why specific technologies were chosen, and how data flows between the frontend, the backend proxy, the AI models, and the blockchain.
 
 ---
 
 ## 1. Project Overview & Philosophy
 
-ChainVault is a production-grade Web3 portfolio and treasury management platform. It allows users to connect their wallets, view token balances, analyze risk, generate AI-driven capital efficiency strategies, execute cross-chain swaps safely, and manage smart contract allowances.
+VaultMind is a production-grade Web3 portfolio and treasury management platform. It allows users to connect their wallets, view token balances, analyze risk, generate AI-driven capital efficiency strategies, execute cross-chain swaps safely, and manage smart contract allowances.
 
 **The Core Philosophy: Secure Middleware Abstraction**
-Unlike typical decentralized applications (dApps) that execute logic and expose API keys directly in the user's browser, ChainVault leverages **Next.js API routes as a secure proxy layer**. 
+Unlike typical decentralized applications (dApps) that execute logic and expose API keys directly in the user's browser, VaultMind leverages **Next.js API routes as a secure proxy layer**. 
 * The **Client** (Browser) only handles rendering the UI and signing transactions via the wallet.
 * The **Server** (Next.js APIs) handles all external routing, rate-limiting, risk calculations, and AI inference. This completely protects your API keys from being stolen.
 
@@ -47,7 +47,7 @@ We never let the AI "hallucinate" raw blockchain state. The AI acts purely as an
 ## 4. Web3 Transaction Execution Flow
 
 ### A. AI-Powered Swaps (Zero-KYC via SwapAPI)
-ChainVault uses a custom backend proxy to route swaps without relying on 1inch or 0x API keys, bypassing restrictive KYC requirements.
+VaultMind uses a custom backend proxy to route swaps without relying on 1inch or 0x API keys, bypassing restrictive KYC requirements.
 1. **Quote (`/api/swap/quote`)**: User enters "1 ETH". The backend proxies a request to `api.swapapi.dev` and extracts `data.data.expectedAmountOut`. It returns this to the UI to show the user they will receive exactly "3000 USDC".
 2. **Build (`/api/swap/build`)**: When the user clicks "Execute", the backend requests the exact smart contract calldata (`to`, `data`, `value`) from SwapAPI.
 3. **Sign & Send**: The backend returns the `tx` object to the frontend. The frontend feeds this directly into Wagmi's `useSendTransaction` hook. MetaMask pops up, the user signs, and the swap is broadcast to the Ethereum network.

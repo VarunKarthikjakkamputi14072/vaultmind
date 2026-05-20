@@ -6,7 +6,7 @@ import { ConnectKitProvider, getDefaultConfig } from 'connectkit'
 
 const config = createConfig(
   getDefaultConfig({
-    appName: 'ChainVault',
+    appName: 'VaultMind',
     chains: [mainnet, arbitrum, base],
     transports: {
       [mainnet.id]: http(),
