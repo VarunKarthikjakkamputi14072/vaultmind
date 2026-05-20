@@ -64,7 +64,8 @@ export function TokenTable({ activeAddress, onTotalCalculated, onTokensLoaded }:
       .catch(console.error)
       .finally(() => setLoading(false))
       
-  }, [activeAddress, onTotalCalculated, onTokensLoaded])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeAddress])
 
   return (
     <motion.div 
