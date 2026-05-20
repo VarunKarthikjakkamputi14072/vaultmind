@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
   try {
     const { text } = await generateText({
-      model: google('gemini-1.5-flash'),
+      model: google('gemini-1.5-flash-latest'),
       system: SYSTEM_PROMPTS.AUTOMATION_ENGINEER,
       prompt: `The treasury currently holds these idle assets: ${idleAssets.join(', ')}. Suggest 3 highly specific smart contract automation strategies (e.g. yield framing, auto-rebalancing) to optimize capital efficiency.`,
     });
