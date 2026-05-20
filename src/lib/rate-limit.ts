@@ -1,16 +1,17 @@
-import Redis from 'ioredis';
+import { Redis } from '@upstash/redis';
 
-// Graceful fallback if REDIS_URL is not set yet
-const redisUrl = process.env.REDIS_URL || '';
-export const redis = redisUrl ? new Redis(redisUrl) : null;
+// Graceful fallback if UPSTASH keys are not set yet
+const url = process.env.UPSTASH_REDIS_REST_URL || '';
+const token = process.env.UPSTASH_REDIS_REST_TOKEN || '';
+
+export const redis = (url && token) ? new Redis({ url, token }) : null;
 
 /**
  * Basic rate limiting wrapper.
- * In a real production setup, if redis is null, this should probably fail closed,
- * but to avoid breaking local dev without Redis, we fail open.
+ * Fails open for local dev without redis
  */
 export async function rateLimit(key: string, limit: number, windowSec: number): Promise<boolean> {
-  if (!redis) return true; // Fail open for local dev without redis
+  if (!redis) return true; 
   
   const current = await redis.incr(key);
   if (current === 1) {

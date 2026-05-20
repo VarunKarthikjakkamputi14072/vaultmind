@@ -1,5 +1,5 @@
 import { generateText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { SYSTEM_PROMPTS } from '@/lib/ai/prompt-builder';
@@ -16,9 +16,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: 'OpenAI API key not configured on server' }, { status: 500 });
+    return NextResponse.json({ error: 'Google AI key not configured on server' }, { status: 500 });
   }
 
   let body;
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
   const { tokens } = parsed.data;
   
-  const customOpenAI = createOpenAI({ apiKey });
+  const google = createGoogleGenerativeAI({ apiKey });
   
   const idleAssets = tokens
     .filter(t => (Number(t.usd_value) || 0) > 1000) // focus on assets > $1000
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
   try {
     const { text } = await generateText({
-      model: customOpenAI('gpt-4o-mini'),
+      model: google('gemini-1.5-flash'),
       system: SYSTEM_PROMPTS.AUTOMATION_ENGINEER,
       prompt: `The treasury currently holds these idle assets: ${idleAssets.join(', ')}. Suggest 3 highly specific smart contract automation strategies (e.g. yield framing, auto-rebalancing) to optimize capital efficiency.`,
     });
