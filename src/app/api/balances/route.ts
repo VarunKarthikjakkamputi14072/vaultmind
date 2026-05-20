@@ -33,7 +33,7 @@ export async function GET(request: Request) {
     const fetchPromises = chains.map(async (chain) => {
       const res = await fetch(
         `https://deep-index.moralis.io/api/v2.2/wallets/${walletAddress}/tokens?chain=${chain.id}`,
-        { headers: { 'accept': 'application/json', 'X-API-Key': process.env.NEXT_PUBLIC_MORALIS_API_KEY || '' } }
+        { headers: { 'accept': 'application/json', 'X-API-Key': process.env.MORALIS_API_KEY || process.env.NEXT_PUBLIC_MORALIS_API_KEY || '' } }
       );
       if (!res.ok) return [];
       const data = await res.json();

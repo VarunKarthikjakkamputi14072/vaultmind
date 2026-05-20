@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       {
         headers: {
           'accept': 'application/json',
-          'X-API-Key': process.env.NEXT_PUBLIC_MORALIS_API_KEY || ''
+          'X-API-Key': process.env.MORALIS_API_KEY || process.env.NEXT_PUBLIC_MORALIS_API_KEY || ''
         },
       }
     );
