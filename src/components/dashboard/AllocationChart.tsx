@@ -28,7 +28,7 @@ export function AllocationChart({ tokens, totalUSD }: { tokens: Record<string, u
     const symbols = new Set<string>();
 
     tokens.forEach((t: any) => {
-      const chain = t.chain || 'Unknown';
+      const chain = (t.chain || 'Unknown').toUpperCase();
       const symbol = t.symbol || 'UNK';
       const value = parseFloat(t.usd_value) || 0;
       
@@ -66,11 +66,11 @@ export function AllocationChart({ tokens, totalUSD }: { tokens: Record<string, u
                 axisLine={false} 
                 tickLine={false} 
                 width={85} 
-                tick={{ fill: 'var(--text-primary)', fontWeight: 'bold', fontSize: 13, textTransform: 'uppercase' }} 
+                tick={{ fill: 'var(--text-primary)', fontWeight: 'bold', fontSize: 13 }} 
               />
               <Tooltip
                 cursor={{ fill: 'rgba(0,0,0,0.05)' }}
-                formatter={(value: number, name: string) => [`$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, name]}
+                formatter={(value: any, name: any) => [`$${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, name]}
                 contentStyle={{ background: 'var(--bg-elevated)', border: '3px solid var(--bg-border)', borderRadius: 0, boxShadow: '4px 4px 0 0 rgba(0,0,0,1)', fontWeight: 'bold' }}
               />
               {allSymbols.map((symbol, idx) => (
