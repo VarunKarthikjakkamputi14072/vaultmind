@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   // Step 3: call Gemini inside try/catch
   try {
     const { text } = await generateText({
-      model: google('gemini-2.5-flash'),
+      model: google('gemini-1.5-flash'),
       system: SYSTEM_PROMPTS.TREASURY_ANALYST,
       prompt: `Analyze this treasury portfolio. Top verified assets: ${topTokens.join(', ') || 'None'}. Risk Score: ${riskProfile.score}/100 (${riskProfile.level}).${spamStr} Provide a 2-sentence strategic recommendation. If spam tokens exist, briefly warn the user.`,
     });

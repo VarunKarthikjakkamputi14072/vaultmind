@@ -47,7 +47,7 @@ export async function POST(request: Request) {
   // Step 3: call Gemini inside try/catch
   try {
     const { text } = await generateText({
-      model: google('gemini-2.5-flash'),
+      model: google('gemini-1.5-flash'),
       system: SYSTEM_PROMPTS.TREASURY_ANALYST,
       prompt: `${buildTradeAnalysisPrompt(quoteData)}\nMEV Risk Score: ${mevRisk.vulnerabilityScore}/100. ${mevRisk.recommendation}`,
     });
