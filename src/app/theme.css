@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-brutalist), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@layer base {
+  :root {
+    --bg-base: #eecb46;
+    --bg-surface: #f8f5eb;
+    --bg-elevated: #ffffff;
+    --bg-border: #111111;
+
+    --brand-from: #111111;
+    --brand-to: #111111;
+
+    --status-safe: #10B981;
+    --status-caution: #F59E0B;
+    --status-danger: #EF4444;
+
+    --text-primary: #111111;
+    --text-secondary: #333333;
+    --text-muted: #555555;
+  }
+
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+  }
+
+  /* Brutalist card */
+  .glass-card {
+    background: var(--bg-surface) !important;
+    border: 3px solid var(--bg-border) !important;
+    border-radius: 0 !important;
+    box-shadow: 6px 6px 0px 0px var(--bg-border) !important;
+    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out !important;
+  }
+  .glass-card:hover {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 4px 4px 0px 0px var(--bg-border) !important;
+  }
+
+  .gradient-border {
+    /* nullify */
+  }
+  .gradient-border::before {
+    display: none !important;
+  }
+
+  .mesh-bg {
+    display: none !important;
+  }
+
+  /* Global component overrides for brutalism */
+  input {
+    border: 3px solid var(--bg-border) !important;
+    border-radius: 0 !important;
+    background-color: var(--bg-elevated) !important;
+    color: var(--text-primary) !important;
+    box-shadow: inset 2px 2px 0px 0px rgba(0,0,0,0.05) !important;
+  }
+
+  button:not(.ck-button) {
+    border-radius: 0 !important;
+    border: 3px solid var(--bg-border) !important;
+    box-shadow: 4px 4px 0px 0px var(--bg-border) !important;
+    background: var(--bg-base) !important;
+    color: var(--text-primary) !important;
+    font-weight: 800 !important;
+    transition: transform 0.1s, box-shadow 0.1s !important;
+  }
+  
+  button:not(.ck-button):hover:not(:disabled) {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 2px 2px 0px 0px var(--bg-border) !important;
+  }
+
+  button:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+  }
+
+  table {
+    border: 3px solid var(--bg-border) !important;
+  }
+  th, td {
+    border-bottom: 2px solid var(--bg-border) !important;
+  }
+
+  /* Shimmer skeleton animation */
+  @keyframes shimmer {
+    0%   { background-color: var(--bg-surface); }
+    50%  { background-color: #e5e5e5; }
+    100% { background-color: var(--bg-surface); }
+  }
+  .shimmer {
+    animation: shimmer 1.4s ease-in-out infinite;
+    border: 2px solid var(--bg-border);
+    border-radius: 0 !important;
+  }
+}

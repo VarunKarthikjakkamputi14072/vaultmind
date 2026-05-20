@@ -6,6 +6,18 @@ export interface MevRiskProfile {
 }
 
 export function evaluateMevRisk(quoteData: Record<string, unknown>): MevRiskProfile {
+  const MIN_USD_THRESHOLD = 50;
+  const tradeUsdValue = Number(quoteData.usdValue || quoteData.fromTokenAmountUsd || 0);
+  
+  if (tradeUsdValue < MIN_USD_THRESHOLD) {
+    return { 
+      vulnerabilityScore: 10, 
+      sandwichRisk: false,
+      frontrunRisk: false,
+      recommendation: "Safe to trade. Minor slippage acceptable.", 
+    };
+  }
+
   // A deterministic mock evaluating standard EVM swap quotes for MEV vulnerabilities
   const priceImpact = Number(quoteData.estimatedPriceImpact || 0);
   const slippage = Number(quoteData.slippage || 1); // standard 1% default
