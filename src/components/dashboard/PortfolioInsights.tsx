@@ -44,30 +44,36 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
 
   if (!activeAddress) return null;
 
+  let parsedInsight = null;
+  if (insight) {
+    try {
+      const cleaned = insight.replace(/```json/g, '').replace(/```/g, '').trim();
+      parsedInsight = JSON.parse(cleaned);
+    } catch (e) {
+      // fallback to raw text
+    }
+  }
+
   return (
     <motion.div 
       variants={cardVariants} 
       initial="hidden" 
       animate="visible"
-      className="glass-card gradient-border p-6 hover:border-blue-500/30 transition-all duration-300"
+      className="bg-[--bg-elevated] border-[3px] border-[--bg-border] p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all duration-300"
     >
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-          <Sparkles className="w-4 h-4 text-white" />
-        </div>
-        <h2 className="text-[--text-primary] font-semibold">Portfolio Risk Analysis</h2>
+      <div className="flex items-center gap-3 mb-6 border-b-[3px] border-[--bg-border] pb-4">
+        <h2 className="text-xl font-black text-[--text-primary] uppercase tracking-wide">Portfolio Risk Analysis</h2>
       </div>
 
       <div className="space-y-4">
-        {error && <div className="text-red-400 text-sm bg-red-400/10 p-3 rounded">{error}</div>}
+        {error && <div className="text-white text-sm bg-red-600 border-[3px] border-black p-3 font-bold">{error}</div>}
         
         {!insight && !loading && (
           <div>
-            <p className="text-sm text-[--text-secondary] mb-4">Inference engine assessment:</p>
             <button 
               onClick={handleAnalyze}
               disabled={tokens.length === 0}
-              className="w-full bg-[--bg-elevated] hover:bg-slate-700 text-slate-200 text-sm font-medium py-2 rounded-md transition-colors disabled:opacity-50 border border-[--bg-border]"
+              className="w-full bg-[#eecb46] hover:bg-yellow-400 text-black border-[3px] border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px] transition-all text-sm font-black py-3 uppercase tracking-wider"
             >
               Run Analysis
             </button>
@@ -76,32 +82,44 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
 
         {loading && (
           <div className="space-y-3">
-            <div className="shimmer h-5 w-32 rounded" />
-            <div className="shimmer h-4 w-24 rounded" />
-            <div className="shimmer h-24 w-full rounded" />
+            <div className="animate-pulse bg-gray-300 h-8 w-full border-[3px] border-black" />
+            <div className="animate-pulse bg-gray-300 h-24 w-full border-[3px] border-black" />
           </div>
         )}
 
         {insight && risk && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-[--bg-surface] rounded-lg border border-[--bg-border]">
-              <span className="text-sm text-[--text-secondary]">Risk Score</span>
+            <div className="flex items-center justify-between p-3 bg-white border-[3px] border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
+              <span className="text-sm font-black uppercase">Risk Score</span>
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-bold ${risk.score > 50 ? 'text-[--status-danger]' : 'text-[--status-safe]'}`}>
+                <span className={`text-sm font-black ${risk.score > 50 ? 'text-red-600' : 'text-green-600'}`}>
                   {risk.score}/100 ({risk.level})
                 </span>
-                {risk.score > 50 && <ShieldAlert className="w-4 h-4 text-[--status-danger]" />}
+                {risk.score > 50 && <ShieldAlert className="w-5 h-5 text-red-600" />}
               </div>
             </div>
             
-            <div className="text-sm text-[--text-primary] leading-relaxed p-4 bg-[--bg-elevated] border border-[--brand-from] rounded-lg">
-              <p>{insight}</p>
-            </div>
+            {parsedInsight && parsedInsight.analysis ? (
+              <div className="space-y-3">
+                <div className="border-[3px] border-black bg-white p-3">
+                  <span className="font-black uppercase text-xs block mb-1">Analysis</span>
+                  <p className="text-sm">{parsedInsight.analysis}</p>
+                </div>
+                <div className="border-[3px] border-black bg-[#eecb46] p-3">
+                  <span className="font-black uppercase text-xs block mb-1">Recommendation</span>
+                  <p className="text-sm">{parsedInsight.recommendation}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm text-black leading-relaxed p-4 bg-white border-[3px] border-black whitespace-pre-wrap">
+                {insight}
+              </div>
+            )}
 
             {risk.factors.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs text-[--text-muted] font-medium uppercase tracking-wider">Risk Factors</p>
-                <ul className="text-sm text-[--text-secondary] list-disc list-inside space-y-1">
+              <div className="space-y-2 pt-2">
+                <p className="text-xs text-black font-black uppercase tracking-wider">Risk Factors</p>
+                <ul className="text-sm text-black list-disc list-inside space-y-1">
                   {risk.factors.map((f: string, i: number) => <li key={i}>{f}</li>)}
                 </ul>
               </div>

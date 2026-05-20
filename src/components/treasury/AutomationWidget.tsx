@@ -36,28 +36,35 @@ export function AutomationWidget({ tokens, activeAddress }: { tokens: Record<str
 
   if (!activeAddress) return null;
 
+  let parsedStrategies: any[] = [];
+  if (suggestions) {
+    try {
+      const cleaned = suggestions.replace(/```json/g, '').replace(/```/g, '').trim();
+      parsedStrategies = JSON.parse(cleaned).strategies || [];
+    } catch (e) {
+      // fallback
+    }
+  }
+
   return (
     <motion.div 
       variants={cardVariants} 
       initial="hidden" 
       animate="visible"
-      className="glass-card gradient-border p-6 hover:border-blue-500/30 transition-all duration-300"
+      className="bg-[--bg-elevated] border-[3px] border-[--bg-border] p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all duration-300"
     >
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-          <Bot className="w-4 h-4 text-white" />
-        </div>
-        <h2 className="text-[--text-primary] font-semibold">Heuristic treasury automation</h2>
+      <div className="flex items-center gap-3 mb-6 border-b-[3px] border-[--bg-border] pb-4">
+        <h2 className="text-xl font-black text-[--text-primary] uppercase tracking-wide">Heuristic treasury automation</h2>
       </div>
 
       <div className="space-y-4">
-        {error && <div className="text-[--status-danger] text-sm bg-red-400/10 p-3 rounded">{error}</div>}
+        {error && <div className="text-white text-sm bg-red-600 border-[3px] border-black p-3 font-bold">{error}</div>}
         
         {!suggestions && !loading && (
           <button 
             onClick={handleGenerate}
             disabled={tokens.length === 0}
-            className="w-full bg-[--bg-elevated] hover:bg-slate-700 text-slate-200 text-sm font-medium py-2 rounded-md transition-colors disabled:opacity-50 border border-[--bg-border]"
+            className="w-full bg-[#eecb46] hover:bg-yellow-400 text-black border-[3px] border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px] transition-all text-sm font-black py-3 uppercase tracking-wider"
           >
             Run Analysis
           </button>
@@ -65,14 +72,31 @@ export function AutomationWidget({ tokens, activeAddress }: { tokens: Record<str
 
         {loading && (
           <div className="space-y-3">
-            <div className="shimmer h-8 w-full rounded" />
-            <div className="shimmer h-24 w-full rounded" />
+            <div className="animate-pulse bg-gray-300 h-8 w-full border-[3px] border-black" />
+            <div className="animate-pulse bg-gray-300 h-24 w-full border-[3px] border-black" />
           </div>
         )}
 
         {suggestions && (
-          <div className="text-sm text-[--text-primary] leading-relaxed p-4 bg-[--bg-elevated] border border-[--brand-from] rounded-lg whitespace-pre-wrap animate-in fade-in zoom-in duration-300">
-            {suggestions}
+          <div className="space-y-4 animate-in fade-in zoom-in duration-300">
+            {parsedStrategies.length > 0 ? (
+              parsedStrategies.map((s, i) => (
+                <div key={i} className="border-[3px] border-black bg-white p-4 shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
+                  <div className="flex items-center justify-between border-b-[3px] border-black pb-2 mb-2">
+                    <h3 className="font-black text-black uppercase">{s.name}</h3>
+                    <span className="text-xs bg-black text-white px-2 py-1 font-bold">{s.platform || 'DeFi'}</span>
+                  </div>
+                  <p className="text-sm text-black mb-3">{s.description}</p>
+                  <div className="bg-[#eecb46] border-[3px] border-black p-2 text-xs font-mono font-bold text-black">
+                    > {s.action}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-sm text-black leading-relaxed p-4 bg-white border-[3px] border-black whitespace-pre-wrap">
+                {suggestions}
+              </div>
+            )}
           </div>
         )}
       </div>
