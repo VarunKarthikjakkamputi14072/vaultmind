@@ -38,7 +38,22 @@
   }
   .glass-card:hover {
     transform: translate(2px, 2px) !important;
-    box-shadow: 4px 4px 0px 0px var(--bg-border) !important;
+    animation: pulse-glow 2s ease-in-out infinite !important;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-6px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(37,99,235,0.2); }
+    50%       { box-shadow: 0 0 40px rgba(124,58,237,0.4); }
+  }
+
+  .logo-icon {
+    display: inline-block;
+    animation: float 3s ease-in-out infinite;
   }
 
   .gradient-border {
