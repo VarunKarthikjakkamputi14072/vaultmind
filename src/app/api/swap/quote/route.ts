@@ -47,10 +47,10 @@ export async function GET(request: Request) {
       throw new Error(`SwapAPI Error: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json();
+    const result = await response.json();
     return NextResponse.json({
-      toAmount: data.amountOut || "0",
-      tx: data.tx || {}
+      toAmount: result.data?.expectedAmountOut || "0",
+      tx: result.data?.tx || {}
     });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Unknown server error";
