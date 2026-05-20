@@ -12,8 +12,8 @@ ChainVault is a production-grade Web3 portfolio and treasury management platform
 ### 2. Architecture Philosophy
 Our core philosophy is **Secure Middleware Abstraction**. Unlike typical dApps that expose logic and API keys in the client bundle, ChainVault heavily leverages Next.js API routes to act as a secure proxy layer. The client handles UI and signing; the server handles routing, rate-limiting, risk calculations, and AI inference.
 
-### 3. Core Differentiators & DeFinite1 Comparison
-While inspired by concepts in DeFinite1 (a standard Web3 dashboard), ChainVault differs by integrating **AI-Augmented Risk Engines**. We don't just show balances; we evaluate MEV (Miner Extractable Value) vulnerabilities, calculate stablecoin ratios deterministically, and query LLMs for actionable smart-contract strategies.
+### 3. Core Differentiators
+ChainVault stands out by integrating **AI-Augmented Risk Engines**. We don't just show balances; we evaluate MEV (Miner Extractable Value) vulnerabilities, calculate stablecoin ratios deterministically, and query LLMs for actionable smart-contract strategies.
 
 ### 4. How AI Integration Works Conceptually
 We never let AI hallucinate raw blockchain state. 
