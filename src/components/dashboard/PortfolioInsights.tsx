@@ -103,15 +103,23 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
               </div>
             </div>
             
-            {parsedInsight && (parsedInsight.analysis || parsedInsight.portfolio) ? (
+            {parsedInsight && (parsedInsight.analysis || parsedInsight.portfolio || parsedInsight.treasury_analysis) ? (
               <div className="space-y-3">
                 <div className="border-[3px] border-black bg-white p-3">
                   <span className="font-black uppercase text-xs block mb-1">Analysis</span>
-                  <p className="text-sm">{parsedInsight.analysis || parsedInsight.portfolio}</p>
+                  <p className="text-sm">
+                    {typeof (parsedInsight.analysis || parsedInsight.portfolio || parsedInsight.treasury_analysis) === 'string' 
+                      ? (parsedInsight.analysis || parsedInsight.portfolio || parsedInsight.treasury_analysis) 
+                      : JSON.stringify(parsedInsight.analysis || parsedInsight.portfolio || parsedInsight.treasury_analysis, null, 2)}
+                  </p>
                 </div>
                 <div className="border-[3px] border-black bg-[#eecb46] p-3">
                   <span className="font-black uppercase text-xs block mb-1">Recommendation</span>
-                  <p className="text-sm">{parsedInsight.recommendation}</p>
+                  <p className="text-sm">
+                    {typeof parsedInsight.recommendation === 'string' 
+                      ? parsedInsight.recommendation 
+                      : JSON.stringify(parsedInsight.recommendation, null, 2)}
+                  </p>
                 </div>
               </div>
             ) : (

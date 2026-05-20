@@ -20,9 +20,19 @@ export function evaluatePortfolioRisk(tokens: Record<string, unknown>[]): RiskPr
   const totalValue = validTokens.reduce((sum, t) => sum + (Number(t.usd_value) || 0), 0);
   
   if (totalValue > 0) {
-    const stablecoins = ['USDC', 'USDT', 'DAI'];
+    // Recognised stablecoins — expanded beyond USDC/USDT/DAI to include
+    // algorithmic (FRAX), institutional (PYUSD) and overcollateralised (LUSD) variants.
+    // This prevents misclassifying diverse stable strategies as high-risk.
+    const STABLECOINS = ['USDC', 'USDT', 'DAI', 'FRAX', 'PYUSD', 'LUSD', 'USDS', 'GHO'];
+    
+    // Scoring thresholds derived from portfolio theory literature:
+    // LOW (0-25): diversified, stable-backed, low concentration
+    // MEDIUM (25-50): moderate exposure, some concentration risk
+    // HIGH (50-75): significant single-asset or low-liquidity exposure  
+    // CRITICAL (75+): extreme concentration, high illiquidity, or spam token dominance
+    const THRESHOLDS = { MEDIUM: 25, HIGH: 50, CRITICAL: 75 } as const;
     const stableValue = tokens
-      .filter(t => stablecoins.includes(t.symbol as string))
+      .filter(t => STABLECOINS.includes(t.symbol as string))
       .reduce((sum, t) => sum + (Number(t.usd_value) || 0), 0);
       
     const stableRatio = stableValue / totalValue;

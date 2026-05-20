@@ -13,11 +13,11 @@
 ## Overview
 ChainVault is a production-grade Web3 portfolio and treasury management platform. It enables users to monitor multi-chain asset holdings, execute gasless cross-chain swaps, and receive LLM-augmented risk assessments before trade execution — all without surrendering custody of private keys.
 
-## Key Technical Contributions
-- **Secure middleware abstraction**: All external API calls proxied through Next.js server routes — API keys never exposed to the browser.
-- **Probabilistic risk scoring system**: Deterministic pre-scoring (concentration analysis, stablecoin ratio) combined with Gemini 2.5 Flash inference for natural-language risk narratives.
-- **Heuristic treasury automation**: Identifies idle assets above a configurable USD threshold and generates yield optimisation strategies via structured LLM output.
-- **12-point deployment gate**: validate.sh enforces TypeScript strictness, ESLint compliance, Prisma schema integrity, and security checks before every push.
+## Key Engineering Decisions
+- **Provider-agnostic inference waterfall**: The LLM layer uses a cascading fallback chain (Groq → Gemini → Cohere) ensuring inference availability independent of any single provider's uptime or quota limits.
+- **Deterministic pre-scoring**: Portfolio risk is evaluated with a rule-based engine before any LLM call. The LLM only adds natural-language narrative — it never produces the risk score itself. This separates deterministic correctness from probabilistic generation.
+- **Secure middleware abstraction**: All external API calls (swap aggregation, portfolio data, LLM inference) are proxied through Next.js server routes. Zero API keys are exposed to the browser.
+- **12-point deployment gate**: validate.sh enforces TypeScript strictness, ESLint compliance, production build, and Prisma schema integrity before every deployment.
 
 ## Architecture
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for full system design.
