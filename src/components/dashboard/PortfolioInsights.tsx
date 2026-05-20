@@ -44,13 +44,17 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
 
   if (!activeAddress) return null;
 
-  let parsedInsight = null;
+  let parsedInsight: any = null;
   if (insight) {
-    try {
-      const cleaned = insight.replace(/```json/g, '').replace(/```/g, '').trim();
-      parsedInsight = JSON.parse(cleaned);
-    } catch (e) {
-      // fallback to raw text
+    if (typeof insight === 'object') {
+      parsedInsight = insight;
+    } else if (typeof insight === 'string') {
+      try {
+        const cleaned = insight.replace(/```json/g, '').replace(/```/g, '').trim();
+        parsedInsight = JSON.parse(cleaned);
+      } catch (e) {
+        // fallback to raw text
+      }
     }
   }
 
@@ -99,11 +103,11 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
               </div>
             </div>
             
-            {parsedInsight && parsedInsight.analysis ? (
+            {parsedInsight && (parsedInsight.analysis || parsedInsight.portfolio) ? (
               <div className="space-y-3">
                 <div className="border-[3px] border-black bg-white p-3">
                   <span className="font-black uppercase text-xs block mb-1">Analysis</span>
-                  <p className="text-sm">{parsedInsight.analysis}</p>
+                  <p className="text-sm">{parsedInsight.analysis || parsedInsight.portfolio}</p>
                 </div>
                 <div className="border-[3px] border-black bg-[#eecb46] p-3">
                   <span className="font-black uppercase text-xs block mb-1">Recommendation</span>
@@ -112,7 +116,7 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
               </div>
             ) : (
               <div className="text-sm text-black leading-relaxed p-4 bg-white border-[3px] border-black whitespace-pre-wrap">
-                {insight}
+                {typeof insight === 'string' ? insight : JSON.stringify(insight, null, 2)}
               </div>
             )}
 

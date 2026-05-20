@@ -38,11 +38,15 @@ export function AutomationWidget({ tokens, activeAddress }: { tokens: Record<str
 
   let parsedStrategies: any[] = [];
   if (suggestions) {
-    try {
-      const cleaned = suggestions.replace(/```json/g, '').replace(/```/g, '').trim();
-      parsedStrategies = JSON.parse(cleaned).strategies || [];
-    } catch (e) {
-      // fallback
+    if (typeof suggestions === 'object') {
+      parsedStrategies = (suggestions as any).strategies || [];
+    } else if (typeof suggestions === 'string') {
+      try {
+        const cleaned = suggestions.replace(/```json/g, '').replace(/```/g, '').trim();
+        parsedStrategies = JSON.parse(cleaned).strategies || [];
+      } catch (e) {
+        // fallback
+      }
     }
   }
 
@@ -94,7 +98,7 @@ export function AutomationWidget({ tokens, activeAddress }: { tokens: Record<str
               ))
             ) : (
               <div className="text-sm text-black leading-relaxed p-4 bg-white border-[3px] border-black whitespace-pre-wrap">
-                {suggestions}
+                {typeof suggestions === 'string' ? suggestions : JSON.stringify(suggestions, null, 2)}
               </div>
             )}
           </div>
