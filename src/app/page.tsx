@@ -39,18 +39,21 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-          <AllocationChart tokens={tokens} totalUSD={netWorth} />
+            <AllocationChart tokens={tokens} totalUSD={netWorth} />
             <TokenTable 
               activeAddress={activeAddress} 
               onTotalCalculated={(val) => setNetWorth(val)} 
               onTokensLoaded={(t) => setTokens(t)} 
             />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <AllowanceManager />
+              <BatchSend />
+            </div>
           </div>
           <div className="space-y-6">
             <PortfolioInsights tokens={tokens} activeAddress={activeAddress} />
             <SwapWidget />
-            <AllowanceManager />
-            <BatchSend />
             <AutomationWidget tokens={tokens} activeAddress={activeAddress} />
           </div>
         </div>
