@@ -47,12 +47,12 @@ export async function POST(request: Request) {
 
   // Step 3: call AI Waterfall inside try/catch
   try {
-    const text = await generateTextWaterfall({
+    const result = await generateTextWaterfall({
       system: SYSTEM_PROMPTS.TREASURY_ANALYST,
       prompt: `${buildTradeAnalysisPrompt(quoteData)}\nMEV Risk Score: ${mevRisk.vulnerabilityScore}/100. ${mevRisk.recommendation}`
     });
 
-    return NextResponse.json({ insight: text, mevRisk });
+    return NextResponse.json({ insight: result.content, mevRisk });
   } catch (error: unknown) {
     console.error('[AI route error]', error); // server log only
     return NextResponse.json(

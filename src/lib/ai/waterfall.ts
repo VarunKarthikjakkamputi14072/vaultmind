@@ -22,12 +22,10 @@ export async function generateTextWaterfall({ system, prompt }: { system: string
     : null;
 
   const providers = [
-    { name: 'Groq Llama-3.1 70B', model: groq?.('llama-3.1-70b-versatile') },
-    { name: 'Groq Mixtral', model: groq?.('mixtral-8x7b-32768') },
-    { name: 'Google Gemini 2.5 Flash', model: google?.('gemini-2.5-flash') },
-    { name: 'Cohere Command R+', model: cohere?.('command-r-plus') },
-    { name: 'OpenRouter Llama-3.1 8B (Free)', model: openrouter?.('meta-llama/llama-3.1-8b-instruct:free') },
-    { name: 'OpenRouter Gemma-2 9B (Free)', model: openrouter?.('google/gemma-2-9b-it:free') }
+    { name: 'Groq', model: groq?.('llama-3.3-70b-versatile') },
+    { name: 'Gemini', model: google?.('gemini-2.5-flash') },
+    { name: 'Cohere', model: cohere?.('command-r-plus') },
+    { name: 'OpenRouter', model: openrouter?.('mistralai/mistral-7b-instruct:free') }
   ];
 
   let lastError: any = null;
@@ -47,7 +45,7 @@ export async function generateTextWaterfall({ system, prompt }: { system: string
         prompt: prompt,
       });
       console.log(`[AI Waterfall] Success with ${provider.name}!`);
-      return text;
+      return { success: true, content: text };
     } catch (e: any) {
       console.error(`[AI Waterfall] ${provider.name} failed:`, e?.message || e);
       lastError = e;
@@ -55,9 +53,9 @@ export async function generateTextWaterfall({ system, prompt }: { system: string
     }
   }
 
-  if (attemptCount === 0) {
-    throw new Error('No AI providers configured. Please add an API key (Google, Groq, Cohere, or OpenRouter) to .env');
-  }
-
-  throw new Error(`All AI providers failed. Last error: ${lastError?.message || 'Unknown error'}`);
+  console.error(`[AI Waterfall] All AI providers failed. Last error: ${lastError?.message || 'Unknown error'}`);
+  return {
+    success: false,
+    content: "AI service temporarily unavailable",
+  };
 }

@@ -53,13 +53,13 @@ export async function POST(request: Request) {
 
   // Step 3: call AI Waterfall inside try/catch
   try {
-    const text = await generateTextWaterfall({
+    const result = await generateTextWaterfall({
       system: SYSTEM_PROMPTS.AUTOMATION_ENGINEER,
       prompt: `The treasury currently holds these verified assets: ${assetStr}.${spamStr} Suggest 3 highly specific smart contract automation strategies (e.g. yield farming, auto-rebalancing) to optimize capital efficiency based ONLY on the verified assets. If spam tokens were ignored, explicitly warn the user in one sentence not to interact with them.`
     });
 
     return NextResponse.json({
-      suggestions: text
+      suggestions: result.content
     });
   } catch (error: unknown) {
     console.error('[AI route error]', error); // server log only

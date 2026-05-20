@@ -57,13 +57,13 @@ export async function POST(request: Request) {
 
   // Step 3: call AI Waterfall inside try/catch
   try {
-    const text = await generateTextWaterfall({
+    const result = await generateTextWaterfall({
       system: SYSTEM_PROMPTS.TREASURY_ANALYST,
       prompt: `Analyze this treasury portfolio. Top verified assets: ${topTokens.join(', ') || 'None'}. Risk Score: ${riskProfile.score}/100 (${riskProfile.level}).${spamStr} Provide a 2-sentence strategic recommendation. If spam tokens exist, briefly warn the user.`
     });
 
     return NextResponse.json({
-      insight: text,
+      insight: result.content,
       risk: riskProfile
     });
   } catch (error: unknown) {
