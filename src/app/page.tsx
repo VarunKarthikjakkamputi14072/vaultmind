@@ -62,8 +62,10 @@ export default function DashboardPage() {
 
           {/* Right Sidebar (AI & Actions) */}
           <div className="space-y-6 lg:col-span-2">
-            <PortfolioInsights tokens={tokens} activeAddress={activeAddress} />
-            <AutomationWidget tokens={tokens} activeAddress={activeAddress} />
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+              <PortfolioInsights tokens={tokens} activeAddress={activeAddress} />
+              <AutomationWidget tokens={tokens} activeAddress={activeAddress} />
+            </div>
             <SwapWidget />
           </div>
         </div>
