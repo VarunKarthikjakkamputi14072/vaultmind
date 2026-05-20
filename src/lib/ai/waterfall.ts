@@ -4,6 +4,10 @@ import { createGroq } from '@ai-sdk/groq';
 import { createCohere } from '@ai-sdk/cohere';
 import { createOpenAI } from '@ai-sdk/openai';
 
+// Provider waterfall: attempts inference in priority order.
+// Groq (fastest, free) → Google Gemini (reliable) → Cohere (fallback)
+// This ensures zero single-provider dependency — critical for production uptime.
+
 export async function generateTextWaterfall({ system, prompt }: { system: string, prompt: string }) {
   const google = process.env.GOOGLE_GENERATIVE_AI_API_KEY
     ? createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY })
@@ -53,7 +57,8 @@ export async function generateTextWaterfall({ system, prompt }: { system: string
     }
   }
 
-  console.error(`[AI Waterfall] All AI providers failed. Last error: ${lastError?.message || 'Unknown error'}`);
+  const finalErrorMsg = lastError instanceof Error ? lastError.message : String(lastError || 'Unknown error');
+  console.error(`[AI Waterfall] All AI providers failed. Last error: ${finalErrorMsg}`);
   return {
     success: false,
     content: "AI service temporarily unavailable",

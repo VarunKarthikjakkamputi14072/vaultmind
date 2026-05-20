@@ -8,6 +8,7 @@ import { AllowanceManager } from "@/components/treasury/AllowanceManager"
 import { BatchSend } from "@/components/treasury/BatchSend"
 import { PortfolioInsights } from "@/components/dashboard/PortfolioInsights"
 import { AutomationWidget } from "@/components/treasury/AutomationWidget"
+import { TransactionHistory } from "@/components/dashboard/TransactionHistory"
 
 export default function DashboardPage() {
   const { address: connectedAddress, isConnected } = useAccount()
@@ -31,15 +32,15 @@ export default function DashboardPage() {
               placeholder="Paste 0x address..."
               value={manualInput}
               onChange={(e) => setManualInput(e.target.value)}
-              className="bg-[--bg-elevated] border-[3px] border-[--bg-border] rounded-none px-3 py-1.5 text-sm text-[--text-primary] w-64 outline-none"
+              className="bg-[--bg-elevated] border border-[--bg-border] rounded-xl px-4 py-2 text-sm text-[--text-primary] w-72 outline-none focus:border-blue-500 transition-colors"
             />
-            <button type="submit" className="px-4 py-1.5 text-sm">View</button>
+            <button type="submit" className="gradient-btn text-sm px-4 py-2">View</button>
           </form>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
           {/* Left Sidebar */}
-          <div className="space-y-6 lg:col-span-1">
+          <div className="space-y-6 xl:col-span-1">
             <div className="bg-[--bg-elevated] border-[3px] border-[--bg-border] p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
               <p className="text-sm text-[--text-secondary] mb-2 uppercase font-bold tracking-wider">Total Net Worth</p>
               <p className="text-4xl font-black text-[--text-primary]">
@@ -51,7 +52,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="xl:col-span-2 space-y-6">
             <AllocationChart tokens={tokens} totalUSD={netWorth} />
             <TokenTable 
               activeAddress={activeAddress} 
@@ -61,12 +62,13 @@ export default function DashboardPage() {
           </div>
 
           {/* Right Sidebar (AI & Actions) */}
-          <div className="space-y-6 lg:col-span-2">
+          <div className="space-y-6 xl:col-span-2">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
               <PortfolioInsights tokens={tokens} activeAddress={activeAddress} />
               <AutomationWidget tokens={tokens} activeAddress={activeAddress} />
             </div>
             <SwapWidget />
+            <TransactionHistory activeAddress={activeAddress} />
           </div>
         </div>
       </main>

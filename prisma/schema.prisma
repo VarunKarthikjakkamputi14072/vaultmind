@@ -27,10 +27,23 @@ model Transaction {
   txHash        String   @unique
   walletId      String
   wallet        Wallet   @relation(fields: [walletId], references: [id])
-  type          String   // e.g., "SWAP", "TRANSFER"
-  status        String   // e.g., "PENDING", "COMPLETED", "FAILED"
+  type          String   // "SWAP" | "TRANSFER" | "APPROVAL_REVOKE"
+  status        String   // "PENDING" | "COMPLETED" | "FAILED"
+  
+  // Add these missing fields
+  fromToken     String?
+  toToken       String?
+  fromAmount    String?  // store as string to avoid float precision loss
+  toAmount      String?
+  chainId       Int?
+  usdValueAtTime Float?
+  riskScoreAtTime Int?   // save the deterministic risk score at time of swap
+  gasUsed       String?
+  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([txHash])
+  @@index([walletId, createdAt]) // compound index for history queries
+  @@index([chainId])
 }
