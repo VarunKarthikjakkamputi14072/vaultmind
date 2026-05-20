@@ -9,6 +9,17 @@ const QuoteSchema = z.object({
   chainId: z.string().default('1'),
 });
 
+const SwapQuoteSchema = z.object({
+  data: z.object({
+    expectedAmountOut: z.string(),
+    tx: z.object({
+      to: z.string().optional(),
+      data: z.string().optional(),
+      value: z.string().optional(),
+    }).optional(),
+  })
+});
+
 export async function GET(request: Request) {
   // 1. Rate Limiting (Max 10 requests per 10 seconds per IP)
   const ip = request.headers.get('x-forwarded-for') || 'anonymous';
@@ -47,12 +58,19 @@ export async function GET(request: Request) {
       throw new Error(`SwapAPI Error: ${response.status} - ${errorText}`);
     }
 
-    const result = await response.json();
+    const raw = await response.json();
+    const parsedRes = SwapQuoteSchema.safeParse(raw);
+    
+    if (!parsedRes.success) {
+      return NextResponse.json({ error: 'Unexpected response from swap aggregator.' }, { status: 502 });
+    }
+
     return NextResponse.json({
-      toAmount: result.data?.expectedAmountOut || "0",
-      tx: result.data?.tx || {}
+      toAmount: parsedRes.data.data.expectedAmountOut || "0",
+      tx: parsedRes.data.data.tx || {}
     });
   } catch (error: unknown) {
+    console.error('[swap quote error]', error);
     const msg = error instanceof Error ? error.message : "Unknown server error";
     return NextResponse.json({ error: msg }, { status: 500 });
   }

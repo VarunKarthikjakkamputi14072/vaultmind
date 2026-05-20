@@ -1,63 +1,66 @@
 'use client'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
-import { useMemo } from "react"
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { motion } from 'framer-motion';
 
-export function AllocationChart({ totalUsd }: { totalUsd: number }) {
-  // Generates a realistic 7-day trailing curve based on the live total
-  const data = useMemo(() => {
-    if (!totalUsd) return Array.from({ length: 7 }).map((_, i) => ({ date: `Day ${i+1}`, value: 0 }));
+const CHART_COLOURS = ['#3B82F6','#8B5CF6','#06B6D4','#10B981','#F59E0B','#EF4444'];
 
-    const points = [];
-    let currentVal = totalUsd * 0.85; // Mock starting 15% lower 7 days ago
-    
-    for(let i=6; i>=0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const cardVariants = {
+  hidden:  { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' as const } }
+};
 
-        if (i === 0) {
-            points.push({ date: dateStr, value: totalUsd }); // Ensure it ends at the exact real balance
-        } else {
-            // Deterministic mock volatility based on index instead of Math.random
-            const volatility = 1 + ((i % 3 === 0 ? 0.02 : -0.01) - 0.005);
-            currentVal = currentVal * volatility;
-            points.push({ date: dateStr, value: Number(currentVal.toFixed(2)) });
-        }
-    }
-    return points;
-  }, [totalUsd]);
+export function AllocationChart({ tokens, totalUSD }: { tokens: Record<string, unknown>[], totalUSD: number }) {
+  // Extract numeric USD value from the token objects
+  const chartData = tokens.map(t => ({
+    name: t.symbol,
+    usdValue: parseFloat(String(t.usdValue).replace(/[$,]/g, '')) || 0
+  })).filter(t => t.usdValue > 0);
 
   return (
-    <Card className="bg-slate-900 border-slate-800">
-      <CardHeader>
-        <CardTitle className="text-lg font-medium text-slate-200">7-Day Performance</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[250px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="date" stroke="#475569" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="#475569" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} width={80} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '8px' }}
-                itemStyle={{ color: '#818cf8' }}
-                formatter={(value: number | string | readonly (string | number)[] | undefined) => {
-                  if (typeof value === 'number') return [`$${value.toLocaleString()}`, 'Value'];
-                  return [`$${value}`, 'Value'];
-                }}
-              />
-              <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
-            </AreaChart>
-          </ResponsiveContainer>
+    <motion.div 
+      variants={cardVariants} 
+      initial="hidden" 
+      animate="visible" 
+      className="glass-card gradient-border p-6 hover:border-blue-500/30 transition-all duration-300"
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
+          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+          </svg>
         </div>
-      </CardContent>
-    </Card>
-  )
+        <h2 className="text-[--text-primary] font-semibold">Asset Allocation</h2>
+      </div>
+
+      <div className="relative">
+        <ResponsiveContainer width="100%" height={220}>
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%" cy="50%"
+              innerRadius={70}
+              outerRadius={100}
+              paddingAngle={3}
+              dataKey="usdValue"
+            >
+              {chartData.map((_, i) => (
+                <Cell key={i} fill={CHART_COLOURS[i % CHART_COLOURS.length]} />
+              ))}
+            </Pie>
+            <Tooltip
+              contentStyle={{ background: 'var(--bg-surface)', border: 'none', borderRadius: 12 }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <p className="text-xs text-[--text-muted]">Total Value</p>
+          <p className="text-xl font-bold text-[--text-primary]">
+            ${totalUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
 }

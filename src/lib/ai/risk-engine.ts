@@ -8,8 +8,16 @@ export function evaluatePortfolioRisk(tokens: Record<string, unknown>[]): RiskPr
   let score = 0;
   const factors: string[] = [];
 
+  const validTokens = tokens.filter(t => t.possible_spam !== true && Number(t.usd_value) > 0);
+  const spamTokens = tokens.filter(t => t.possible_spam === true || !t.usd_value || Number(t.usd_value) === 0);
+
+  if (spamTokens.length > 0) {
+    score += Math.min(spamTokens.length * 5, 30); // Cap at 30 points
+    factors.push(`Detected ${spamTokens.length} unpriced or suspected spam tokens (highly illiquid).`);
+  }
+
   // Simple rule-based risk evaluation for demonstration
-  const totalValue = tokens.reduce((sum, t) => sum + (Number(t.usd_value) || 0), 0);
+  const totalValue = validTokens.reduce((sum, t) => sum + (Number(t.usd_value) || 0), 0);
   
   if (totalValue > 0) {
     const stablecoins = ['USDC', 'USDT', 'DAI'];
@@ -27,7 +35,7 @@ export function evaluatePortfolioRisk(tokens: Record<string, unknown>[]): RiskPr
       factors.push("Very high stablecoin allocation. Low market exposure.");
     }
 
-    if (tokens.length < 3) {
+    if (validTokens.length < 3) {
       score += 30;
       factors.push("Low diversification (less than 3 assets).");
     }

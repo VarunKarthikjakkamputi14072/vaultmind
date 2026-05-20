@@ -1,7 +1,12 @@
 'use client'
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Sparkles, ShieldAlert } from 'lucide-react'
+import { motion } from 'framer-motion'
+
+const cardVariants = {
+  hidden:  { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' as const } }
+};
 
 type RiskProfile = {
   score: number;
@@ -40,65 +45,70 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
   if (!activeAddress) return null;
 
   return (
-    <Card className="bg-slate-900 border-slate-800">
-      <CardHeader>
-        <CardTitle className="text-lg font-medium text-slate-200 flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-indigo-400" />
-          AI Treasury Insights
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <motion.div 
+      variants={cardVariants} 
+      initial="hidden" 
+      animate="visible"
+      className="glass-card gradient-border p-6 hover:border-blue-500/30 transition-all duration-300"
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
+          <Sparkles className="w-4 h-4 text-white" />
+        </div>
+        <h2 className="text-[--text-primary] font-semibold">Portfolio Risk Analysis</h2>
+      </div>
+
+      <div className="space-y-4">
         {error && <div className="text-red-400 text-sm bg-red-400/10 p-3 rounded">{error}</div>}
         
         {!insight && !loading && (
-          <button 
-            onClick={handleAnalyze}
-            disabled={tokens.length === 0}
-            className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium py-2 rounded-md transition-colors disabled:opacity-50"
-          >
-            Generate Treasury Report
-          </button>
+          <div>
+            <p className="text-sm text-[--text-secondary] mb-4">Inference engine assessment:</p>
+            <button 
+              onClick={handleAnalyze}
+              disabled={tokens.length === 0}
+              className="w-full bg-[--bg-elevated] hover:bg-slate-700 text-slate-200 text-sm font-medium py-2 rounded-md transition-colors disabled:opacity-50 border border-[--bg-border]"
+            >
+              Run Analysis
+            </button>
+          </div>
         )}
 
         {loading && (
-          <div className="animate-pulse flex space-x-4">
-            <div className="flex-1 space-y-3 py-1">
-              <div className="h-2 bg-slate-800 rounded"></div>
-              <div className="space-y-2">
-                <div className="h-2 bg-slate-800 rounded w-5/6"></div>
-                <div className="h-2 bg-slate-800 rounded w-4/6"></div>
-              </div>
-            </div>
+          <div className="space-y-3">
+            <div className="shimmer h-5 w-32 rounded" />
+            <div className="shimmer h-4 w-24 rounded" />
+            <div className="shimmer h-24 w-full rounded" />
           </div>
         )}
 
         {insight && risk && (
-          <div className="space-y-4 animate-in fade-in zoom-in duration-300">
-            <div className="flex items-center justify-between p-3 bg-slate-950 rounded-lg border border-slate-800">
-              <span className="text-sm text-slate-400">Risk Score</span>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-[--bg-surface] rounded-lg border border-[--bg-border]">
+              <span className="text-sm text-[--text-secondary]">Risk Score</span>
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-bold ${risk.score > 50 ? 'text-red-400' : 'text-emerald-400'}`}>
+                <span className={`text-sm font-bold ${risk.score > 50 ? 'text-[--status-danger]' : 'text-[--status-safe]'}`}>
                   {risk.score}/100 ({risk.level})
                 </span>
-                {risk.score > 50 && <ShieldAlert className="w-4 h-4 text-red-400" />}
+                {risk.score > 50 && <ShieldAlert className="w-4 h-4 text-[--status-danger]" />}
               </div>
             </div>
             
-            <div className="text-sm text-slate-300 leading-relaxed p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+            <div className="text-sm text-[--text-primary] leading-relaxed p-4 bg-[--bg-elevated] border border-[--brand-from] rounded-lg">
               <p>{insight}</p>
             </div>
 
             {risk.factors.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Risk Factors</p>
-                <ul className="text-sm text-slate-400 list-disc list-inside space-y-1">
+                <p className="text-xs text-[--text-muted] font-medium uppercase tracking-wider">Risk Factors</p>
+                <ul className="text-sm text-[--text-secondary] list-disc list-inside space-y-1">
                   {risk.factors.map((f: string, i: number) => <li key={i}>{f}</li>)}
                 </ul>
               </div>
             )}
-          </div>
+          </motion.div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </motion.div>
   )
 }

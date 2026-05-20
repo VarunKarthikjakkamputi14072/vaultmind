@@ -1,8 +1,14 @@
 'use client'
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAccount, useReadContract, useWriteContract } from 'wagmi'
 import { erc20Abi, formatUnits } from 'viem'
+import { motion } from 'framer-motion'
+import { Shield } from 'lucide-react'
+
+const cardVariants = {
+  hidden:  { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' as const } }
+};
 
 export function AllowanceManager() {
   const { address } = useAccount()
@@ -47,29 +53,38 @@ export function AllowanceManager() {
     : '---';
 
   return (
-    <Card className="bg-slate-900 border-slate-800">
-      <CardHeader>
-        <CardTitle className="text-lg font-medium text-slate-200">Allowance Manager</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <motion.div 
+      variants={cardVariants} 
+      initial="hidden" 
+      animate="visible"
+      className="glass-card gradient-border p-6 hover:border-blue-500/30 transition-all duration-300"
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
+          <Shield className="w-4 h-4 text-white" />
+        </div>
+        <h2 className="text-[--text-primary] font-semibold">Allowance Manager</h2>
+      </div>
+      
+      <div className="space-y-4">
         <input
           type="text"
           placeholder="Token Address (0x...)"
           value={tokenAddress}
           onChange={(e) => setTokenAddress(e.target.value)}
-          className="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+          className="w-full bg-[--bg-surface] border border-[--bg-border] rounded-md px-3 py-2 text-sm text-[--text-primary] focus:outline-none focus:border-[--brand-from]"
         />
         <input
           type="text"
           placeholder="Spender Address (0x...)"
           value={spenderAddress}
           onChange={(e) => setSpenderAddress(e.target.value)}
-          className="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+          className="w-full bg-[--bg-surface] border border-[--bg-border] rounded-md px-3 py-2 text-sm text-[--text-primary] focus:outline-none focus:border-[--brand-from]"
         />
         
-        <div className="flex justify-between items-center bg-slate-950 p-3 rounded border border-slate-800">
-          <span className="text-sm text-slate-400">Current Allowance:</span>
-          <span className="text-sm font-mono text-slate-200">{allowanceDisplay}</span>
+        <div className="flex justify-between items-center bg-[--bg-surface] p-3 rounded border border-[--bg-border]">
+          <span className="text-sm text-[--text-secondary]">Current Allowance:</span>
+          <span className="text-sm font-mono text-[--text-primary]">{allowanceDisplay}</span>
         </div>
 
         <button 
@@ -79,7 +94,7 @@ export function AllowanceManager() {
         >
           {isPending ? 'Revoking...' : 'Revoke Allowance'}
         </button>
-      </CardContent>
-    </Card>
+      </div>
+    </motion.div>
   )
 }
