@@ -22,8 +22,8 @@ export async function generateTextWaterfall({ system, prompt }: { system: string
     : null;
 
   const providers = [
-    { name: 'Google Gemini 1.5 Flash', model: google?.('gemini-1.5-flash') },
     { name: 'Groq Llama-3 70B', model: groq?.('llama3-70b-8192') },
+    { name: 'Google Gemini 2.5 Flash', model: google?.('gemini-2.5-flash') },
     { name: 'Cohere Command-R', model: cohere?.('command-r') },
     { name: 'OpenRouter Llama-3 8B (Free)', model: openrouter?.('meta-llama/llama-3-8b-instruct:free') }
   ];
