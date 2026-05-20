@@ -36,28 +36,25 @@ export async function GET(request: Request) {
 
   const { src, dst, amount, from, slippage, chainId } = parsed.data;
 
-  // 3. Backend Proxy to 1inch
-  const apiKey = process.env['ONEINCH' + '_API_KEY'];
-  if (!apiKey) {
-    return NextResponse.json({ error: '1inch API key not configured on server' }, { status: 500 });
-  }
-
+  // 3. Backend Proxy to SwapAPI (No API Key Required)
   try {
-    const url = `https://api.1inch.dev/swap/v6.0/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=${slippage}`;
+    const url = `https://api.swapapi.dev/v1/swap/${chainId}?tokenIn=${src}&tokenOut=${dst}&amount=${amount}&sender=${from}&slippage=${slippage}`;
     const response = await fetch(url, {
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
         'accept': 'application/json'
       }
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`1inch Swap API Error: ${response.status} - ${errorText}`);
+      throw new Error(`SwapAPI Error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json({
+      toAmount: data.amountOut || "0",
+      tx: data.tx || {}
+    });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Unknown server error";
     return NextResponse.json({ error: msg }, { status: 500 });

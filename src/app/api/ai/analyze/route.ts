@@ -1,5 +1,5 @@
 import { generateText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { buildTradeAnalysisPrompt, SYSTEM_PROMPTS } from '@/lib/ai/prompt-builder';
@@ -10,11 +10,11 @@ const BodySchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
   if (!apiKey) {
     return NextResponse.json(
-      { error: 'OpenAI API key not configured on server.' }, 
+      { error: 'Google AI key not configured on server.' }, 
       { status: 500 }
     );
   }
@@ -32,12 +32,12 @@ export async function POST(request: Request) {
   }
 
   const { quoteData } = parsed.data;
-  const customOpenAI = createOpenAI({ apiKey });
+  const google = createGoogleGenerativeAI({ apiKey });
   const mevRisk = evaluateMevRisk(quoteData);
 
   try {
     const { text } = await generateText({
-      model: customOpenAI('gpt-4o-mini'),
+      model: google('gemini-1.5-flash'),
       system: SYSTEM_PROMPTS.TREASURY_ANALYST,
       prompt: `${buildTradeAnalysisPrompt(quoteData)}\nMEV Risk Score: ${mevRisk.vulnerabilityScore}/100. ${mevRisk.recommendation}`,
     });
