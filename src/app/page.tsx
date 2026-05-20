@@ -21,7 +21,7 @@ export default function DashboardPage() {
   return (
     <>
       <div className="mesh-bg" />
-      <main className="relative z-0 max-w-[1400px] mx-auto p-6 space-y-6">
+      <main className="relative z-0 max-w-[1600px] mx-auto p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-3xl font-bold text-[--text-primary]">Treasury Dashboard</h2>
           
@@ -31,13 +31,20 @@ export default function DashboardPage() {
               placeholder="Paste 0x address..."
               value={manualInput}
               onChange={(e) => setManualInput(e.target.value)}
-              className="bg-slate-900 border border-slate-800 rounded-md px-3 py-1.5 text-sm text-slate-200 w-64 focus:border-indigo-500 outline-none"
+              className="bg-[--bg-elevated] border-[3px] border-[--bg-border] rounded-none px-3 py-1.5 text-sm text-[--text-primary] w-64 outline-none"
             />
-            <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-md text-sm font-medium">View</button>
+            <button type="submit" className="px-4 py-1.5 text-sm">View</button>
           </form>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Sidebar */}
+          <div className="space-y-6 lg:col-span-1">
+            <AllowanceManager />
+            <BatchSend />
+          </div>
+
+          {/* Main Content Area */}
           <div className="lg:col-span-2 space-y-6">
             <AllocationChart tokens={tokens} totalUSD={netWorth} />
             <TokenTable 
@@ -45,13 +52,10 @@ export default function DashboardPage() {
               onTotalCalculated={(val) => setNetWorth(val)} 
               onTokensLoaded={(t) => setTokens(t)} 
             />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <AllowanceManager />
-              <BatchSend />
-            </div>
           </div>
-          <div className="space-y-6">
+
+          {/* Right Sidebar */}
+          <div className="space-y-6 lg:col-span-1">
             <PortfolioInsights tokens={tokens} activeAddress={activeAddress} />
             <SwapWidget />
             <AutomationWidget tokens={tokens} activeAddress={activeAddress} />
