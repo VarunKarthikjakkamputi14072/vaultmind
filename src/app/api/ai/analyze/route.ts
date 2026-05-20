@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { buildTradeAnalysisPrompt, SYSTEM_PROMPTS } from '@/lib/ai/prompt-builder';
 import { evaluateMevRisk } from '@/lib/ai/mev-analyzer';
 import { rateLimit } from '@/lib/rate-limit';
+import { generateTextWaterfall } from '@/lib/ai/waterfall';
 
 const BodySchema = z.object({
   quoteData: z.any(),
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
 
   if (!apiKey) {
     return NextResponse.json(
-      { error: 'Google AI key not configured on server.' }, 
+      { error: 'Google AI key not configured on server.' },
       { status: 500 }
     );
   }
@@ -44,12 +45,11 @@ export async function POST(request: Request) {
   const google = createGoogleGenerativeAI({ apiKey });
   const mevRisk = evaluateMevRisk(quoteData);
 
-  // Step 3: call Gemini inside try/catch
+  // Step 3: call AI Waterfall inside try/catch
   try {
-    const { text } = await generateText({
-      model: google('gemini-1.5-flash'),
+    const text = await generateTextWaterfall({
       system: SYSTEM_PROMPTS.TREASURY_ANALYST,
-      prompt: `${buildTradeAnalysisPrompt(quoteData)}\nMEV Risk Score: ${mevRisk.vulnerabilityScore}/100. ${mevRisk.recommendation}`,
+      prompt: `${buildTradeAnalysisPrompt(quoteData)}\nMEV Risk Score: ${mevRisk.vulnerabilityScore}/100. ${mevRisk.recommendation}`
     });
 
     return NextResponse.json({ insight: text, mevRisk });

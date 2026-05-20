@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { SYSTEM_PROMPTS } from '@/lib/ai/prompt-builder';
 import { evaluatePortfolioRisk } from '@/lib/ai/risk-engine';
 import { rateLimit } from '@/lib/rate-limit';
+import { generateTextWaterfall } from '@/lib/ai/waterfall';
 
 const BodySchema = z.object({
   tokens: z.array(z.any()),
@@ -37,16 +38,16 @@ export async function POST(request: Request) {
   }
 
   const { tokens } = parsed.data;
-  
+
   // 1. Run local deterministic Risk Engine
   const riskProfile = evaluatePortfolioRisk(tokens);
 
   // 2. Generate LLM Insight
   const google = createGoogleGenerativeAI({ apiKey });
-  
+
   const validTokens = tokens.filter(t => t.possible_spam !== true && Number(t.usd_value) > 0);
   const spamTokens = tokens.filter(t => t.possible_spam === true || !t.usd_value || Number(t.usd_value) === 0);
-  
+
   const topTokens = validTokens
     .sort((a, b) => (Number(b.usd_value) || 0) - (Number(a.usd_value) || 0))
     .slice(0, 5)
@@ -54,15 +55,14 @@ export async function POST(request: Request) {
 
   const spamStr = spamTokens.length > 0 ? ` Note: ${spamTokens.length} unpriced/spam tokens were detected and ignored.` : '';
 
-  // Step 3: call Gemini inside try/catch
+  // Step 3: call AI Waterfall inside try/catch
   try {
-    const { text } = await generateText({
-      model: google('gemini-1.5-flash'),
+    const text = await generateTextWaterfall({
       system: SYSTEM_PROMPTS.TREASURY_ANALYST,
-      prompt: `Analyze this treasury portfolio. Top verified assets: ${topTokens.join(', ') || 'None'}. Risk Score: ${riskProfile.score}/100 (${riskProfile.level}).${spamStr} Provide a 2-sentence strategic recommendation. If spam tokens exist, briefly warn the user.`,
+      prompt: `Analyze this treasury portfolio. Top verified assets: ${topTokens.join(', ') || 'None'}. Risk Score: ${riskProfile.score}/100 (${riskProfile.level}).${spamStr} Provide a 2-sentence strategic recommendation. If spam tokens exist, briefly warn the user.`
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       insight: text,
       risk: riskProfile
     });
