@@ -37,7 +37,7 @@ export default function DashboardPage() {
           </form>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Left Sidebar */}
           <div className="space-y-6 lg:col-span-1">
             <AllowanceManager />
@@ -54,11 +54,13 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Right Sidebar */}
-          <div className="space-y-6 lg:col-span-1">
-            <PortfolioInsights tokens={tokens} activeAddress={activeAddress} />
+          {/* Right Sidebar (AI & Actions) */}
+          <div className="space-y-6 lg:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <PortfolioInsights tokens={tokens} activeAddress={activeAddress} />
+              <AutomationWidget tokens={tokens} activeAddress={activeAddress} />
+            </div>
             <SwapWidget />
-            <AutomationWidget tokens={tokens} activeAddress={activeAddress} />
           </div>
         </div>
       </main>
