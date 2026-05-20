@@ -37,15 +37,21 @@ export async function POST(request: Request) {
   
   const google = createGoogleGenerativeAI({ apiKey });
   
-  const idleAssets = tokens
-    .filter(t => (Number(t.usd_value) || 0) > 1000) // focus on assets > $1000
+  let idleAssets = tokens
+    .filter(t => (Number(t.usd_value) || 0) > 100) // Lowered to $100
     .map(t => `${t.symbol} ($${Number(t.usd_value).toFixed(2)})`);
+
+  if (idleAssets.length === 0) {
+    idleAssets = tokens.map(t => `${t.symbol} (Balance: ${Number(t.balance) / 10**Number(t.decimals)})`);
+  }
+
+  const assetStr = idleAssets.length > 0 ? idleAssets.join(', ') : 'No specific tokens';
 
   try {
     const { text } = await generateText({
       model: google('gemini-2.5-flash'),
       system: SYSTEM_PROMPTS.AUTOMATION_ENGINEER,
-      prompt: `The treasury currently holds these idle assets: ${idleAssets.join(', ')}. Suggest 3 highly specific smart contract automation strategies (e.g. yield framing, auto-rebalancing) to optimize capital efficiency.`,
+      prompt: `The treasury currently holds these assets: ${assetStr}. Suggest 3 highly specific smart contract automation strategies (e.g. yield farming, auto-rebalancing) to optimize capital efficiency based on these exact assets.`,
     });
 
     return NextResponse.json({ 
