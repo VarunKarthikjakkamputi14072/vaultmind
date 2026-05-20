@@ -5,10 +5,10 @@ import { createCohere } from '@ai-sdk/cohere';
 import { createOpenAI } from '@ai-sdk/openai';
 
 export async function generateTextWaterfall({ system, prompt }: { system: string, prompt: string }) {
-  const google = process.env.GOOGLE_GENERATIVE_AI_API_KEY 
+  const google = process.env.GOOGLE_GENERATIVE_AI_API_KEY
     ? createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY })
     : null;
-    
+
   const groq = process.env.GROQ_API_KEY
     ? createGroq({ apiKey: process.env.GROQ_API_KEY })
     : null;
@@ -24,7 +24,7 @@ export async function generateTextWaterfall({ system, prompt }: { system: string
   const providers = [
     { name: 'Groq', model: groq?.('llama-3.3-70b-versatile') },
     { name: 'Gemini', model: google?.('gemini-2.5-flash') },
-    { name: 'Cohere', model: cohere?.('command-r-plus') },
+    { name: 'Cohere', model: cohere?.('command-a-plus-05-2026') },
     { name: 'OpenRouter', model: openrouter?.('mistralai/mistral-7b-instruct:free') }
   ];
 
