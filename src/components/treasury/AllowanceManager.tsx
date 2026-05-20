@@ -51,19 +51,15 @@ export function AllowanceManager() {
   const allowanceDisplay = allowanceData !== undefined && decimals !== undefined 
     ? formatUnits(allowanceData, decimals) 
     : '---';
-
   return (
     <motion.div 
       variants={cardVariants} 
       initial="hidden" 
       animate="visible"
-      className="glass-card gradient-border p-6 hover:border-blue-500/30 transition-all duration-300"
+      className="bg-[--bg-elevated] border-[3px] border-[--bg-border] p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all duration-300"
     >
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-          <Shield className="w-4 h-4 text-white" />
-        </div>
-        <h2 className="text-[--text-primary] font-semibold">Allowance Manager</h2>
+      <div className="flex items-center gap-3 mb-6 border-b-[3px] border-[--bg-border] pb-4">
+        <h2 className="text-xl font-black text-[--text-primary] uppercase tracking-wide">Allowance Manager</h2>
       </div>
       
       <div className="space-y-4">
@@ -72,25 +68,25 @@ export function AllowanceManager() {
           placeholder="Token Address (0x...)"
           value={tokenAddress}
           onChange={(e) => setTokenAddress(e.target.value)}
-          className="w-full bg-[--bg-surface] border border-[--bg-border] rounded-md px-3 py-2 text-sm text-[--text-primary] focus:outline-none focus:border-[--brand-from]"
+          className="w-full bg-white border-[3px] border-black p-3 text-sm text-black focus:outline-none shadow-[2px_2px_0_0_rgba(0,0,0,1)] font-bold"
         />
         <input
           type="text"
           placeholder="Spender Address (0x...)"
           value={spenderAddress}
           onChange={(e) => setSpenderAddress(e.target.value)}
-          className="w-full bg-[--bg-surface] border border-[--bg-border] rounded-md px-3 py-2 text-sm text-[--text-primary] focus:outline-none focus:border-[--brand-from]"
+          className="w-full bg-white border-[3px] border-black p-3 text-sm text-black focus:outline-none shadow-[2px_2px_0_0_rgba(0,0,0,1)] font-bold"
         />
         
-        <div className="flex justify-between items-center bg-[--bg-surface] p-3 rounded border border-[--bg-border]">
-          <span className="text-sm text-[--text-secondary]">Current Allowance:</span>
-          <span className="text-sm font-mono text-[--text-primary]">{allowanceDisplay}</span>
+        <div className="flex justify-between items-center bg-white p-3 border-[3px] border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
+          <span className="text-sm font-black uppercase text-black">Current Allowance:</span>
+          <span className="text-sm font-mono font-bold text-black">{allowanceDisplay}</span>
         </div>
 
         <button 
           onClick={handleRevoke}
           disabled={isPending || !allowanceData || allowanceData === BigInt(0)}
-          className="w-full bg-red-900/50 hover:bg-red-900/80 disabled:opacity-50 text-red-200 font-medium py-2 rounded-lg transition-colors text-sm border border-red-800/50"
+          className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-black border-[3px] border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px] transition-all font-black py-3 uppercase tracking-wider text-sm mt-2"
         >
           {isPending ? 'Revoking...' : 'Revoke Allowance'}
         </button>

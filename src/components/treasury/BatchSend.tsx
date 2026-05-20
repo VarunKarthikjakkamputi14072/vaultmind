@@ -43,23 +43,20 @@ export function BatchSend() {
       variants={cardVariants} 
       initial="hidden" 
       animate="visible"
-      className="glass-card gradient-border p-6 hover:border-blue-500/30 transition-all duration-300"
+      className="bg-[--bg-elevated] border-[3px] border-[--bg-border] p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all duration-300"
     >
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-          <SendIcon className="w-4 h-4 text-white" />
-        </div>
-        <h2 className="text-[--text-primary] font-semibold">Send Assets</h2>
+      <div className="flex items-center gap-3 mb-6 border-b-[3px] border-[--bg-border] pb-4">
+        <h2 className="text-xl font-black text-[--text-primary] uppercase tracking-wide">Send Assets</h2>
       </div>
 
       <div className="space-y-4">
-        {status && <div className="text-xs text-[--brand-from] bg-indigo-950 p-2 rounded">{status}</div>}
+        {status && <div className="text-xs text-white bg-indigo-950 border-[3px] border-black p-3 font-bold uppercase">{status}</div>}
         <input
           type="text"
           placeholder="Token Address (0x...)"
           value={tokenAddress}
           onChange={(e) => setTokenAddress(e.target.value)}
-          className="w-full bg-[--bg-surface] border border-[--bg-border] rounded-md px-3 py-2 text-sm text-[--text-primary] focus:outline-none focus:border-[--brand-from]"
+          className="w-full bg-white border-[3px] border-[--bg-border] p-3 text-sm text-black focus:outline-none shadow-[2px_2px_0_0_rgba(0,0,0,1)] font-bold"
         />
         <div className="flex gap-2">
           <input
@@ -67,7 +64,7 @@ export function BatchSend() {
             placeholder="Recipient (0x...)"
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
-            className="flex-1 bg-[--bg-surface] border border-[--bg-border] rounded-md px-3 py-2 text-sm text-[--text-primary] focus:outline-none focus:border-[--brand-from]"
+            className="flex-1 bg-white border-[3px] border-[--bg-border] p-3 text-sm text-black focus:outline-none shadow-[2px_2px_0_0_rgba(0,0,0,1)] font-bold"
           />
         </div>
         <div className="flex gap-2">
@@ -76,21 +73,21 @@ export function BatchSend() {
             placeholder="Amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="flex-1 bg-[--bg-surface] border border-[--bg-border] rounded-md px-3 py-2 text-sm text-[--text-primary] focus:outline-none focus:border-[--brand-from]"
+            className="flex-1 bg-white border-[3px] border-[--bg-border] p-3 text-sm text-black focus:outline-none shadow-[2px_2px_0_0_rgba(0,0,0,1)] font-bold"
           />
           <input
             type="number"
             placeholder="Decimals"
             value={decimals}
             onChange={(e) => setDecimals(e.target.value)}
-            className="w-20 bg-[--bg-surface] border border-[--bg-border] rounded-md px-3 py-2 text-sm text-[--text-primary] focus:outline-none focus:border-[--brand-from]"
+            className="w-24 bg-white border-[3px] border-[--bg-border] p-3 text-sm text-black focus:outline-none shadow-[2px_2px_0_0_rgba(0,0,0,1)] font-bold"
           />
         </div>
 
         <button 
           onClick={handleSend}
           disabled={isPending || !tokenAddress || !recipient || !amount}
-          className="w-full bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-600 hover:to-violet-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all duration-200 text-sm"
+          className="w-full bg-[#10B981] hover:bg-[#059669] text-black border-[3px] border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px] disabled:opacity-50 transition-all text-sm font-black py-3 uppercase tracking-wider mt-2"
         >
           {isPending ? 'Sending...' : 'Send Asset'}
         </button>
