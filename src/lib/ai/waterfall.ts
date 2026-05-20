@@ -22,10 +22,12 @@ export async function generateTextWaterfall({ system, prompt }: { system: string
     : null;
 
   const providers = [
-    { name: 'Groq Llama-3 70B', model: groq?.('llama3-70b-8192') },
+    { name: 'Groq Llama-3.1 70B', model: groq?.('llama-3.1-70b-versatile') },
+    { name: 'Groq Mixtral', model: groq?.('mixtral-8x7b-32768') },
     { name: 'Google Gemini 2.5 Flash', model: google?.('gemini-2.5-flash') },
-    { name: 'Cohere Command-R', model: cohere?.('command-r') },
-    { name: 'OpenRouter Llama-3 8B (Free)', model: openrouter?.('meta-llama/llama-3-8b-instruct:free') }
+    { name: 'Cohere Command R+', model: cohere?.('command-r-plus') },
+    { name: 'OpenRouter Llama-3.1 8B (Free)', model: openrouter?.('meta-llama/llama-3.1-8b-instruct:free') },
+    { name: 'OpenRouter Gemma-2 9B (Free)', model: openrouter?.('google/gemma-2-9b-it:free') }
   ];
 
   let lastError: any = null;
