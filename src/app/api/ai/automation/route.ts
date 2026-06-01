@@ -1,5 +1,3 @@
-import { generateText } from 'ai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { SYSTEM_PROMPTS } from '@/lib/ai/prompt-builder';
@@ -37,8 +35,6 @@ export async function POST(request: Request) {
   }
 
   const { tokens } = parsed.data;
-
-  const google = createGoogleGenerativeAI({ apiKey });
 
   const validTokens = tokens.filter(t => t.possible_spam !== true && Number(t.usd_value) > 0);
   const spamTokens = tokens.filter(t => t.possible_spam === true || !t.usd_value || Number(t.usd_value) === 0);

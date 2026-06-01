@@ -30,11 +30,13 @@ export function evaluatePortfolioRisk(tokens: Record<string, unknown>[]): RiskPr
     // MEDIUM (25-50): moderate exposure, some concentration risk
     // HIGH (50-75): significant single-asset or low-liquidity exposure  
     // CRITICAL (75+): extreme concentration, high illiquidity, or spam token dominance
-    const THRESHOLDS = { MEDIUM: 25, HIGH: 50, CRITICAL: 75 } as const;
-    const stableValue = tokens
+    // Use validTokens (the same population as totalValue) so the numerator and
+    // denominator of stableRatio match — summing stables over all tokens while
+    // dividing by the valid-token total skews the ratio.
+    const stableValue = validTokens
       .filter(t => STABLECOINS.includes(t.symbol as string))
       .reduce((sum, t) => sum + (Number(t.usd_value) || 0), 0);
-      
+
     const stableRatio = stableValue / totalValue;
     
     if (stableRatio < 0.1) {
