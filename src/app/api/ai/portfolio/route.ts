@@ -1,5 +1,3 @@
-import { generateText } from 'ai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { SYSTEM_PROMPTS } from '@/lib/ai/prompt-builder';
@@ -42,9 +40,7 @@ export async function POST(request: Request) {
   // 1. Run local deterministic Risk Engine
   const riskProfile = evaluatePortfolioRisk(tokens);
 
-  // 2. Generate LLM Insight
-  const google = createGoogleGenerativeAI({ apiKey });
-
+  // 2. Generate LLM Insight (the waterfall picks the provider + reads its own keys)
   const validTokens = tokens.filter(t => t.possible_spam !== true && Number(t.usd_value) > 0);
   const spamTokens = tokens.filter(t => t.possible_spam === true || !t.usd_value || Number(t.usd_value) === 0);
 

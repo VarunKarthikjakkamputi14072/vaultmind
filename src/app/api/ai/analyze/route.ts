@@ -1,5 +1,3 @@
-import { generateText } from 'ai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { buildTradeAnalysisPrompt, SYSTEM_PROMPTS } from '@/lib/ai/prompt-builder';
@@ -42,7 +40,6 @@ export async function POST(request: Request) {
   }
 
   const { quoteData } = parsed.data;
-  const google = createGoogleGenerativeAI({ apiKey });
   const mevRisk = evaluateMevRisk(quoteData);
 
   // Step 3: call AI Waterfall inside try/catch

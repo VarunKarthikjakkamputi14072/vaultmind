@@ -22,7 +22,6 @@ export async function GET(request: Request) {
   const MORALIS_KEY = process.env.MORALIS_API_KEY || process.env.NEXT_PUBLIC_MORALIS_API_KEY || "";
   const BITQUERY_KEY = process.env.BITQUERY_API_KEY || "1823ea54-1a9e-41e9-a7ff-b7048f0d0cb7";
   const BLOCKDAEMON_KEY = process.env.BLOCKDAEMON_API_KEY || "";
-  const NODE_RPC_KEY = process.env.NODE_RPC_KEY || "6PP5v4uBHcUx9ndQvtBC2";
   const INFURA_KEY = process.env.INFURA_API_KEY || "2f03HVfU+JjvDd9eyA79ASM2GRXXOlT0rwwZtSsAEao0IymMF9FZoA";
 
   const fetchPortals = async (wallet: string) => {
