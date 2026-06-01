@@ -7,6 +7,8 @@ export interface MevRiskProfile {
 
 export function evaluateMevRisk(quoteData: Record<string, unknown>): MevRiskProfile {
   const MIN_USD_THRESHOLD = 50;
+  // Trades above this notional are attractive enough to be worth sandwiching.
+  const LARGE_TRADE_USD = 10_000;
   const tradeUsdValue = Number(quoteData.usdValue || quoteData.fromTokenAmountUsd || 0);
   
   if (tradeUsdValue < MIN_USD_THRESHOLD) {
@@ -36,9 +38,9 @@ export function evaluateMevRisk(quoteData: Record<string, unknown>): MevRiskProf
     sandwichRisk = true;
   }
 
-  // Large trades are generally more susceptible
-  const toAmountStr = String(quoteData.toAmount || "0");
-  if (toAmountStr.length > 20) { // e.g. lots of wei
+  // Large trades are generally more susceptible — judge by USD notional, not by
+  // the digit-length of the raw wei amount (which depends on token decimals).
+  if (tradeUsdValue > LARGE_TRADE_USD) {
     vulnerabilityScore += 30;
   }
 
