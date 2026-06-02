@@ -5,6 +5,9 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)]()
 [![Gemini](https://img.shields.io/badge/Inference-Gemini_2.5_Flash-blue)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
+**[Live Demo →](https://vaultmind-dun.vercel.app)**
+
 ---
 
 ## Overview
