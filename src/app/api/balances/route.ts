@@ -18,14 +18,14 @@ export async function GET(request: Request) {
 
   const { walletAddress } = parsed.data;
 
-  const PORTALS_KEY = process.env.PORTALS_API_KEY || "Bearer f4ed3bc4-2f78-4c2b-adfc-83e98aa169dd"; // Allowed by GH
+  const PORTALS_KEY = process.env.PORTALS_API_KEY || "";
   const MORALIS_KEY = process.env.MORALIS_API_KEY || process.env.NEXT_PUBLIC_MORALIS_API_KEY || "";
-  const BITQUERY_KEY = process.env.BITQUERY_API_KEY || "1823ea54-1a9e-41e9-a7ff-b7048f0d0cb7";
+  const BITQUERY_KEY = process.env.BITQUERY_API_KEY || "";
   const BLOCKDAEMON_KEY = process.env.BLOCKDAEMON_API_KEY || "";
-  const NODE_RPC_KEY = process.env.NODE_RPC_KEY || "6PP5v4uBHcUx9ndQvtBC2";
-  const INFURA_KEY = process.env.INFURA_API_KEY || "2f03HVfU+JjvDd9eyA79ASM2GRXXOlT0rwwZtSsAEao0IymMF9FZoA";
+  const INFURA_KEY = process.env.INFURA_API_KEY || "";
 
   const fetchPortals = async (wallet: string) => {
+    if (!PORTALS_KEY) throw new Error("No Portals Key");
     const res = await fetch(`https://api.portals.fi/v2/account?owner=${wallet}&networks=ethereum&networks=arbitrum&networks=optimism&networks=polygon&networks=base&networks=avalanche&networks=bsc`, {
       headers: { 'Authorization': PORTALS_KEY }
     });
@@ -56,6 +56,7 @@ export async function GET(request: Request) {
   };
 
   const fetchBitquery = async (wallet: string) => {
+    if (!BITQUERY_KEY) throw new Error("No Bitquery Key");
     const res = await fetch('https://graphql.bitquery.io', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-KEY': BITQUERY_KEY },
@@ -83,6 +84,7 @@ export async function GET(request: Request) {
   };
 
   const fetchInfuraRPC = async (wallet: string) => {
+    if (!INFURA_KEY) throw new Error("No Infura Key");
     const res = await fetch(`https://mainnet.infura.io/v3/${INFURA_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

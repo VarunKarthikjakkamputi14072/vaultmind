@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { useWriteContract, useAccount } from 'wagmi'
 import { erc20Abi, parseUnits } from 'viem'
 import { motion } from 'framer-motion'
-import { SendIcon } from 'lucide-react'
 
 const cardVariants = {
   hidden:  { opacity: 0, y: 16 },
