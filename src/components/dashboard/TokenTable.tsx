@@ -9,7 +9,20 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' as const } }
 };
 
-type Token = { name: string; symbol: string; balance: string; usdValue: string; chain: string; }
+type Token = { name: string; symbol: string; balance: string; usdValue: string; chain: string; isSpam: boolean; }
+
+const SPAM_URL_PATTERNS = /\.com|\.io|\.net|\.fi|\.xyz|http|:\/\//i
+const SPAM_BAIT_WORDS   = /\b(claim|airdrop|voucher|visit|invite)\b/i
+const SPAM_PREFIX       = /^[!@]/
+
+function detectSpam(raw: Record<string, unknown>, name: string, symbol: string): boolean {
+  if (raw.possible_spam === true) return true
+  const haystack = `${name} ${symbol}`
+  if (SPAM_URL_PATTERNS.test(haystack)) return true
+  if (SPAM_BAIT_WORDS.test(haystack))   return true
+  if (SPAM_PREFIX.test(name.trim()) || SPAM_PREFIX.test(symbol.trim())) return true
+  return false
+}
 
 export function TokenTable({ activeAddress, onTotalCalculated, onTokensLoaded }: { activeAddress: string | null | undefined, onTotalCalculated: (val: number) => void, onTokensLoaded?: (tokens: Record<string, unknown>[]) => void }) {
   const [tokens, setTokens] = useState<Token[]>([])
@@ -36,13 +49,17 @@ export function TokenTable({ activeAddress, onTotalCalculated, onTokensLoaded }:
           let sum = 0;
           const formattedTokens = tokenArray.map((t: Record<string, unknown>) => {
             const usd = typeof t.usd_value === 'number' ? t.usd_value : 0;
-            sum += usd;
+            const name   = String(t.name   || 'Unknown')
+            const symbol = String(t.symbol || '???')
+            const spam   = detectSpam(t, name, symbol)
+            if (!spam) sum += usd;
             return {
-              name: String(t.name || 'Unknown'),
-              symbol: String(t.symbol || '???'),
+              name,
+              symbol,
               balance: t.decimals ? Number(formatUnits(BigInt(t.balance as string), Number(t.decimals))).toFixed(4) : String(t.balance),
               usdValue: usd > 0 ? `$${usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—',
-              chain: String(t.chain || 'Ethereum')
+              chain: String(t.chain || 'Ethereum'),
+              isSpam: spam,
             }
           })
           
@@ -107,17 +124,31 @@ export function TokenTable({ activeAddress, onTotalCalculated, onTokensLoaded }:
               </thead>
               <tbody>
                 {tokens.map((token, i) => (
-                  <tr key={i} className="border-b border-[--bg-border] hover:bg-[--bg-elevated] transition-colors">
+                  <tr
+                    key={i}
+                    className="border-b border-[--bg-border] hover:bg-[--bg-elevated] transition-colors"
+                    style={token.isSpam ? { opacity: 0.45 } : undefined}
+                  >
                     <td className="px-4 py-4 font-medium text-[--text-primary]">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px] font-bold text-indigo-400 uppercase">
                           {token.symbol ? token.symbol[0] : '?'}
                         </div>
-                        {token.name} <span className="text-[--text-muted] ml-1">{token.symbol}</span>
+                        <span style={token.isSpam ? { textDecoration: 'line-through' } : undefined}>
+                          {token.name}
+                        </span>
+                        <span className="text-[--text-muted] ml-1">{token.symbol}</span>
+                        {token.isSpam && (
+                          <span style={{
+                            fontSize: 9, fontWeight: 700, padding: '2px 5px', borderRadius: 4,
+                            background: 'rgba(239,68,68,0.12)', color: '#EF4444',
+                            border: '1px solid rgba(239,68,68,0.25)', letterSpacing: '0.05em',
+                          }}>SPAM</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-4 font-mono">{token.balance}</td>
-                    <td className="px-4 py-4">{token.usdValue}</td>
+                    <td className="px-4 py-4">{token.isSpam ? '—' : token.usdValue}</td>
                     <td className="px-4 py-4">
                       <span className="px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-[--bg-surface] text-[--text-secondary] border border-[--bg-border]">
                         {token.chain}

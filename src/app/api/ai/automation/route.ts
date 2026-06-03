@@ -16,11 +16,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Rate limit exceeded. Please wait before retrying.' }, { status: 429 });
   }
 
-  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: 'Google AI key not configured on server' }, { status: 500 });
-  }
-
   // Step 2: validate request body
   let body;
   try {
@@ -54,8 +49,19 @@ export async function POST(request: Request) {
       prompt: `The treasury currently holds these verified assets: ${assetStr}.${spamStr} Suggest 3 highly specific smart contract automation strategies (e.g. yield farming, auto-rebalancing) to optimize capital efficiency based ONLY on the verified assets. If spam tokens were ignored, explicitly warn the user in one sentence not to interact with them.`
     });
 
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          error: 'All AI providers exhausted.',
+          providerTrace: result.providerTrace,
+        },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json({
-      suggestions: result.content
+      suggestions: result.content,
+      providerTrace: result.providerTrace,
     });
   } catch (error: unknown) {
     console.error('[AI route error]', error); // server log only

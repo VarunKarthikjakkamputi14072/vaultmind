@@ -2,6 +2,14 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
+type ProviderTraceEntry = { name: string; status: 'success' | 'failed' | 'skipped'; reason?: string }
+
+const traceStatusStyle: Record<string, { color: string; icon: string }> = {
+  success: { color: '#10B981', icon: '✓' },
+  failed:  { color: '#EF4444', icon: '✗' },
+  skipped: { color: '#6B7280', icon: '—' },
+}
+
 type Strategy = {
   title: string
   tag: string
@@ -92,16 +100,18 @@ export function AutomationWidget({ tokens, activeAddress }: {
   tokens: Record<string, unknown>[]
   activeAddress?: string | null
 }) {
-  const [strategies, setStrategies] = useState<Strategy[]>([])
-  const [rawText, setRawText]       = useState('')
-  const [loading, setLoading]       = useState(false)
-  const [error, setError]           = useState('')
-  const [expanded, setExpanded]     = useState<number | null>(null)
+  const [strategies, setStrategies]       = useState<Strategy[]>([])
+  const [rawText, setRawText]             = useState('')
+  const [loading, setLoading]             = useState(false)
+  const [error, setError]                 = useState('')
+  const [expanded, setExpanded]           = useState<number | null>(null)
+  const [providerTrace, setProviderTrace] = useState<ProviderTraceEntry[]>([])
 
   const runAnalysis = async () => {
     if (!tokens.length && !activeAddress) return
     setLoading(true)
     setError('')
+    setProviderTrace([])
     try {
       const res  = await fetch('/api/ai/automation', {
         method: 'POST',
@@ -109,7 +119,12 @@ export function AutomationWidget({ tokens, activeAddress }: {
         body: JSON.stringify({ tokens }),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Analysis failed'); return }
+      if (!res.ok) {
+        setError(data.error || 'Analysis failed')
+        if (data.providerTrace) setProviderTrace(data.providerTrace)
+        return
+      }
+      if (data.providerTrace) setProviderTrace(data.providerTrace)
       const parsed = parseStrategies(data.suggestions || '')
       setStrategies(parsed)
       setRawText(data.suggestions || '')
@@ -184,12 +199,41 @@ export function AutomationWidget({ tokens, activeAddress }: {
         </div>
       )}
 
-      {/* Error */}
+      {/* Error + provider trace */}
       {error && (
         <div style={{
-          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
-          borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#EF4444',
-        }}>{error}</div>
+          background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)',
+          borderRadius: 10, padding: '12px 14px',
+        }}>
+          <p style={{ margin: '0 0 10px', fontSize: 13, color: '#EF4444', fontWeight: 600 }}>{error}</p>
+          {providerTrace.length > 0 && (
+            <div>
+              <p style={{ margin: '0 0 6px', fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Providers attempted
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {providerTrace.map((entry, i) => {
+                  const s = traceStatusStyle[entry.status]
+                  return (
+                    <span
+                      key={i}
+                      title={entry.reason ?? entry.status}
+                      style={{
+                        fontSize: 11, padding: '3px 8px', borderRadius: 6,
+                        background: 'var(--bg-elevated)',
+                        border: `1px solid ${entry.status === 'failed' ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.07)'}`,
+                        color: s.color, display: 'inline-flex', alignItems: 'center', gap: 4,
+                      }}
+                    >
+                      <span>{s.icon}</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>{entry.name}</span>
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Strategy cards */}
@@ -269,16 +313,18 @@ export function AutomationWidget({ tokens, activeAddress }: {
                       display: 'flex', gap: 8,
                     }}
                   >
-                    <a
-                      href={s.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()}
-                      className="gradient-btn"
-                      style={{ fontSize: 12, padding: '8px 16px', textDecoration: 'none' }}
-                    >
-                      Open {s.protocol} →
-                    </a>
+                    {s.link !== '#' && (
+                      <a
+                        href={s.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        className="gradient-btn"
+                        style={{ fontSize: 12, padding: '8px 16px', textDecoration: 'none' }}
+                      >
+                        Open {s.protocol} →
+                      </a>
+                    )}
                     <button
                       onClick={e => { e.stopPropagation(); navigator.clipboard.writeText(s.description) }}
                       style={{
