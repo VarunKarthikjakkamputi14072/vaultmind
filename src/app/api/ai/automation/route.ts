@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { SYSTEM_PROMPTS } from '@/lib/ai/prompt-builder';
 import { rateLimit } from '@/lib/rate-limit';
 import { generateTextWaterfall } from '@/lib/ai/waterfall';
+import { parseStrategyResponse } from '@/lib/ai/strategy-schema';
 
 const BodySchema = z.object({
   tokens: z.array(z.any()),
@@ -59,7 +60,12 @@ export async function POST(request: Request) {
       );
     }
 
+    // Parse the LLM's JSON into validated, typed strategies. If parsing fails
+    // the client still gets the raw text to display under "raw output".
+    const strategies = parseStrategyResponse(result.content);
+
     return NextResponse.json({
+      strategies,            // Strategy[] | null
       suggestions: result.content,
       providerTrace: result.providerTrace,
     });

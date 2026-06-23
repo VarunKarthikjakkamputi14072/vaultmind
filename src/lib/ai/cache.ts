@@ -43,3 +43,30 @@ export async function setCachedText(
     // fail open — caching is best-effort
   }
 }
+
+// ── Generic JSON cache (used by /api/balances and /api/prices) ──────────────
+// Short-lived caching of upstream RPC/indexer responses to cut latency and stay
+// under free-tier quotas. Fails open exactly like the text cache.
+
+export async function getCachedJson<T>(key: string): Promise<T | null> {
+  if (!redis) return null;
+  try {
+    const value = await redis.get<T>(key);
+    return (value ?? null) as T | null;
+  } catch {
+    return null;
+  }
+}
+
+export async function setCachedJson<T>(
+  key: string,
+  value: T,
+  ttlSeconds: number,
+): Promise<void> {
+  if (!redis) return;
+  try {
+    await redis.set(key, JSON.stringify(value), { ex: ttlSeconds });
+  } catch {
+    // fail open
+  }
+}

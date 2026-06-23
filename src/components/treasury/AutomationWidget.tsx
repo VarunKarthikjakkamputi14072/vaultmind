@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { type Strategy, protocolMeta } from '@/lib/ai/strategy-schema'
 
 type ProviderTraceEntry = { name: string; status: 'success' | 'failed' | 'skipped'; reason?: string }
 
@@ -8,86 +9,6 @@ const traceStatusStyle: Record<string, { color: string; icon: string }> = {
   success: { color: '#10B981', icon: '✓' },
   failed:  { color: '#EF4444', icon: '✗' },
   skipped: { color: '#6B7280', icon: '—' },
-}
-
-type Strategy = {
-  title: string
-  tag: string
-  tagColor: string
-  description: string
-  apy: string
-  risk: 'Low' | 'Medium' | 'High'
-  protocol: string
-  protocolIcon: string
-  action: string
-  link: string
-}
-
-function parseStrategies(raw: string): Strategy[] {
-  // Best-effort parser: splits on numbered lines, extracts what it can
-  // Falls back to showing raw text if structure is unexpected
-  const lines = raw.split('\n').filter(l => l.trim())
-  const strategies: Strategy[] = []
-  
-  let current: Partial<Strategy> | null = null
-  
-  for (const line of lines) {
-    const numbered = line.match(/^(\d+)\.\s+\*?\*?(.+?)\*?\*?$/)
-    if (numbered) {
-      if (current?.title) strategies.push(current as Strategy)
-      current = {
-        title: numbered[2].replace(/\*/g, '').trim(),
-        tag: 'DeFi',
-        tagColor: '#2563EB',
-        description: '',
-        apy: '—',
-        risk: 'Medium',
-        protocol: 'On-chain',
-        protocolIcon: '⬡',
-        action: 'Learn more',
-        link: '#',
-      }
-      continue
-    }
-    if (current && line.toLowerCase().includes('apy')) {
-      const apyMatch = line.match(/(\d+(?:\.\d+)?)\s*%/)
-      if (apyMatch) current.apy = `${apyMatch[1]}%`
-    }
-    if (current && line.toLowerCase().includes('aave')) {
-      current.protocol = 'Aave'; current.protocolIcon = '👻'; current.link = 'https://aave.com'
-    }
-    if (current && line.toLowerCase().includes('lido')) {
-      current.protocol = 'Lido'; current.protocolIcon = '🌊'; current.link = 'https://lido.fi'
-    }
-    if (current && line.toLowerCase().includes('uniswap')) {
-      current.protocol = 'Uniswap'; current.protocolIcon = '🦄'; current.link = 'https://app.uniswap.org'
-    }
-    if (current && line.toLowerCase().includes('compound')) {
-      current.protocol = 'Compound'; current.protocolIcon = '🏦'; current.link = 'https://compound.finance'
-    }
-    if (current && line.toLowerCase().includes('curve')) {
-      current.protocol = 'Curve'; current.protocolIcon = '〰️'; current.link = 'https://curve.fi'
-    }
-    if (current && line.toLowerCase().includes('yearn')) {
-      current.protocol = 'Yearn'; current.protocolIcon = '🔵'; current.link = 'https://yearn.fi'
-    }
-    if (current && !current.description && line.length > 20 && !line.startsWith('#')) {
-      current.description = line.replace(/\*/g, '').trim()
-    }
-    if (current && line.toLowerCase().includes('low risk'))    current.risk = 'Low'
-    if (current && line.toLowerCase().includes('medium risk')) current.risk = 'Medium'
-    if (current && line.toLowerCase().includes('high risk'))   current.risk = 'High'
-  }
-  if (current?.title) strategies.push(current as Strategy)
-  
-  // If parser couldn't extract structured data, return 3 smart defaults
-  if (strategies.length === 0) {
-    return [
-      { title: 'Yield Optimisation', tag: 'DeFi', tagColor: '#2563EB', description: raw.slice(0, 120) + '...', apy: '—', risk: 'Medium', protocol: 'Multi-protocol', protocolIcon: '⚡', action: 'View strategies', link: '#' }
-    ]
-  }
-  
-  return strategies.slice(0, 3)
 }
 
 const riskColors = {
@@ -125,9 +46,14 @@ export function AutomationWidget({ tokens, activeAddress }: {
         return
       }
       if (data.providerTrace) setProviderTrace(data.providerTrace)
-      const parsed = parseStrategies(data.suggestions || '')
+      // Server returns validated, typed strategies (or null when the model's
+      // output couldn't be parsed — in that case we surface the raw text).
+      const parsed: Strategy[] = Array.isArray(data.strategies) ? data.strategies : []
       setStrategies(parsed)
       setRawText(data.suggestions || '')
+      if (parsed.length === 0) {
+        setError('The model returned an unexpected format — see raw output below.')
+      }
     } catch {
       setError('Network error — please retry')
     } finally {
@@ -174,7 +100,7 @@ export function AutomationWidget({ tokens, activeAddress }: {
       )}
 
       {/* Run button */}
-      {hasData && strategies.length === 0 && !loading && (
+      {hasData && strategies.length === 0 && !loading && !error && (
         <button onClick={runAnalysis} className="gradient-btn" style={{ width: '100%' }}>
           Generate Capital Efficiency Strategies
         </button>
@@ -233,6 +159,11 @@ export function AutomationWidget({ tokens, activeAddress }: {
               </div>
             </div>
           )}
+          <button onClick={runAnalysis} style={{
+            marginTop: 12, fontSize: 12, padding: '6px 14px', borderRadius: 8,
+            background: 'var(--bg-elevated)', border: '1px solid rgba(255,255,255,0.08)',
+            color: 'var(--text-secondary)', cursor: 'pointer',
+          }}>Retry</button>
         </div>
       )}
 
@@ -240,6 +171,7 @@ export function AutomationWidget({ tokens, activeAddress }: {
       <AnimatePresence>
         {strategies.map((s, i) => {
           const rc = riskColors[s.risk]
+          const meta = protocolMeta(s.protocol)
           const isOpen = expanded === i
           return (
             <motion.div
@@ -260,7 +192,7 @@ export function AutomationWidget({ tokens, activeAddress }: {
               <div style={{ padding: '14px 16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 18 }}>{s.protocolIcon}</span>
+                    <span style={{ fontSize: 18 }}>{meta.icon}</span>
                     <div>
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                         {s.title}
@@ -271,12 +203,10 @@ export function AutomationWidget({ tokens, activeAddress }: {
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    {/* Risk badge */}
                     <span style={{
                       fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 6,
                       background: rc.bg, color: rc.text, border: `1px solid ${rc.border}`,
                     }}>{s.risk} Risk</span>
-                    {/* Expand chevron */}
                     <span style={{
                       fontSize: 12, color: 'var(--text-muted)',
                       transform: isOpen ? 'rotate(180deg)' : 'rotate(0)',
@@ -313,9 +243,9 @@ export function AutomationWidget({ tokens, activeAddress }: {
                       display: 'flex', gap: 8,
                     }}
                   >
-                    {s.link !== '#' && (
+                    {meta.link && (
                       <a
-                        href={s.link}
+                        href={meta.link}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={e => e.stopPropagation()}
@@ -344,7 +274,7 @@ export function AutomationWidget({ tokens, activeAddress }: {
       </AnimatePresence>
 
       {/* Raw text fallback toggle */}
-      {rawText && strategies.length > 0 && (
+      {rawText && (
         <details style={{ marginTop: 4 }}>
           <summary style={{ fontSize: 11, color: 'var(--text-muted)', cursor: 'pointer' }}>
             View raw inference output

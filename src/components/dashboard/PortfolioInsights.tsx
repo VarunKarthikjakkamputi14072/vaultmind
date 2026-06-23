@@ -32,8 +32,8 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to analyze portfolio");
-      setInsight(data.insight);
-      setRisk(data.risk);
+      setInsight(data.insight);   // may be null if all AI providers were exhausted
+      setRisk(data.risk);         // deterministic risk engine — always present
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Unknown error";
       setError(msg);
@@ -72,9 +72,9 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
       <div className="space-y-4">
         {error && <div className="text-white text-sm bg-red-600 border-[3px] border-black p-3 font-bold">{error}</div>}
         
-        {!insight && !loading && (
+        {!risk && !loading && (
           <div>
-            <button 
+            <button
               onClick={handleAnalyze}
               disabled={tokens.length === 0}
               className="w-full bg-[#eecb46] hover:bg-yellow-400 text-black border-[3px] border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px] transition-all text-sm font-black py-3 uppercase tracking-wider"
@@ -91,7 +91,7 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
           </div>
         )}
 
-        {insight && risk && (
+        {risk && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
             <div className="flex items-center justify-between p-3 bg-white border-[3px] border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
               <span className="text-sm font-black uppercase">Risk Score</span>
@@ -102,30 +102,39 @@ export function PortfolioInsights({ tokens, activeAddress }: { tokens: Record<st
                 {risk.score > 50 && <ShieldAlert className="w-5 h-5 text-red-600" />}
               </div>
             </div>
-            
-            {parsedInsight && (parsedInsight.analysis || parsedInsight.portfolio || parsedInsight.treasury_analysis) ? (
-              <div className="space-y-3">
-                <div className="border-[3px] border-black bg-white p-3">
-                  <span className="font-black uppercase text-xs block mb-1">Analysis</span>
-                  <p className="text-sm">
-                    {typeof (parsedInsight.analysis || parsedInsight.portfolio || parsedInsight.treasury_analysis) === 'string' 
-                      ? (parsedInsight.analysis || parsedInsight.portfolio || parsedInsight.treasury_analysis) 
-                      : JSON.stringify(parsedInsight.analysis || parsedInsight.portfolio || parsedInsight.treasury_analysis, null, 2)}
-                  </p>
-                </div>
-                <div className="border-[3px] border-black bg-[#eecb46] p-3">
-                  <span className="font-black uppercase text-xs block mb-1">Recommendation</span>
-                  <p className="text-sm">
-                    {typeof parsedInsight.recommendation === 'string' 
-                      ? parsedInsight.recommendation 
-                      : JSON.stringify(parsedInsight.recommendation, null, 2)}
-                  </p>
-                </div>
+
+            {!insight && (
+              <div className="border-[3px] border-black bg-white p-3 text-sm">
+                <span className="font-black uppercase text-xs block mb-1">Analysis</span>
+                <p className="text-gray-600">AI narrative temporarily unavailable — risk score above is computed locally and remains accurate.</p>
               </div>
-            ) : (
-              <div className="text-sm text-black leading-relaxed p-4 bg-white border-[3px] border-black whitespace-pre-wrap">
-                {typeof insight === 'string' ? insight : JSON.stringify(insight, null, 2)}
-              </div>
+            )}
+
+            {insight && (
+              parsedInsight && (parsedInsight.analysis || parsedInsight.portfolio || parsedInsight.treasury_analysis) ? (
+                <div className="space-y-3">
+                  <div className="border-[3px] border-black bg-white p-3">
+                    <span className="font-black uppercase text-xs block mb-1">Analysis</span>
+                    <p className="text-sm">
+                      {typeof (parsedInsight.analysis || parsedInsight.portfolio || parsedInsight.treasury_analysis) === 'string'
+                        ? (parsedInsight.analysis || parsedInsight.portfolio || parsedInsight.treasury_analysis)
+                        : JSON.stringify(parsedInsight.analysis || parsedInsight.portfolio || parsedInsight.treasury_analysis, null, 2)}
+                    </p>
+                  </div>
+                  <div className="border-[3px] border-black bg-[#eecb46] p-3">
+                    <span className="font-black uppercase text-xs block mb-1">Recommendation</span>
+                    <p className="text-sm">
+                      {typeof parsedInsight.recommendation === 'string'
+                        ? parsedInsight.recommendation
+                        : JSON.stringify(parsedInsight.recommendation, null, 2)}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-black leading-relaxed p-4 bg-white border-[3px] border-black whitespace-pre-wrap">
+                  {typeof insight === 'string' ? insight : JSON.stringify(insight, null, 2)}
+                </div>
+              )
             )}
 
             {risk.factors.length > 0 && (

@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { flagSpam } from '@/lib/spam';
+import { getCachedJson, setCachedJson } from '@/lib/ai/cache';
 
 const QuerySchema = z.object({
   walletAddress: z.string().min(1, 'Wallet address is required'),
 });
+
+const BALANCES_TTL_SECONDS = 45;
+
+type RawToken = Record<string, unknown>;
+
+/** Annotate each token with a server-computed `possible_spam` flag. */
+function annotateSpam(tokens: RawToken[]): RawToken[] {
+  return tokens.map((t) => ({ ...t, possible_spam: flagSpam(t) }));
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -17,6 +28,14 @@ export async function GET(request: Request) {
   }
 
   const { walletAddress } = parsed.data;
+
+  // Serve a recent cached snapshot if available — cuts latency and stays under
+  // free-tier indexer quotas on repeat loads / refreshes.
+  const cacheKey = `balances:${walletAddress.toLowerCase()}`;
+  const cached = await getCachedJson<RawToken[]>(cacheKey);
+  if (cached) {
+    return NextResponse.json({ result: cached, cached: true });
+  }
 
   const PORTALS_KEY = process.env.PORTALS_API_KEY || "";
   const MORALIS_KEY = process.env.MORALIS_API_KEY || process.env.NEXT_PUBLIC_MORALIS_API_KEY || "";
@@ -108,8 +127,9 @@ export async function GET(request: Request) {
   for (const provider of providers) {
     try {
       console.log(`Attempting to fetch balances with ${provider.name}...`);
-      const tokens = await provider.fn(walletAddress);
+      const tokens = annotateSpam(await provider.fn(walletAddress));
       console.log(`${provider.name} succeeded!`);
+      await setCachedJson(cacheKey, tokens, BALANCES_TTL_SECONDS);
       return NextResponse.json({ result: tokens });
     } catch (error: unknown) {
       console.warn(`${provider.name} failed: ${(error as Error).message}. Falling back...`);

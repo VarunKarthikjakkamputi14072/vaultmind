@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { getCachedJson, setCachedJson } from '@/lib/ai/cache';
 
 const QuerySchema = z.object({
   address: z.string().min(1, 'Token address is required'),
   chainId: z.string().default('0x1'),
 });
+
+const PRICE_TTL_SECONDS = 60;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -20,6 +23,12 @@ export async function GET(request: Request) {
 
   const { address, chainId } = parsed.data;
 
+  const cacheKey = `price:${chainId}:${address.toLowerCase()}`;
+  const cached = await getCachedJson<unknown>(cacheKey);
+  if (cached) {
+    return NextResponse.json(cached);
+  }
+
   try {
     const response = await fetch(
       `https://deep-index.moralis.io/api/v2.2/erc20/${address}/price?chain=${chainId}`,
@@ -33,6 +42,7 @@ export async function GET(request: Request) {
 
     if (!response.ok) throw new Error('Failed to fetch price from Moralis');
     const data = await response.json();
+    await setCachedJson(cacheKey, data, PRICE_TTL_SECONDS);
     return NextResponse.json(data);
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Unknown error";

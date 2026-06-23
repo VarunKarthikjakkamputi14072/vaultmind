@@ -17,15 +17,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Rate limit exceeded. Please wait before retrying.' }, { status: 429 });
   }
 
-  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: 'Google AI key not configured on server.' },
-      { status: 500 }
-    );
-  }
-
   // Step 2: validate request body
   let body;
   try {
@@ -49,7 +40,11 @@ export async function POST(request: Request) {
       prompt: `${buildTradeAnalysisPrompt(quoteData)}\nMEV Risk Score: ${mevRisk.vulnerabilityScore}/100. ${mevRisk.recommendation}`
     });
 
-    return NextResponse.json({ insight: result.content, mevRisk });
+    return NextResponse.json({
+      insight: result.success ? result.content : null,
+      mevRisk,
+      providerTrace: result.providerTrace,
+    });
   } catch (error: unknown) {
     console.error('[AI route error]', error); // server log only
     return NextResponse.json(

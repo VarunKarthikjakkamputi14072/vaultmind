@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { formatUnits } from 'viem'
 import { motion } from 'framer-motion'
 import { Layers, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react'
+import { flagSpam } from '@/lib/spam'
 
 const cardVariants = {
   hidden:  { opacity: 0, y: 16 },
@@ -10,19 +11,6 @@ const cardVariants = {
 };
 
 type Token = { name: string; symbol: string; balance: string; usdValue: string; chain: string; isSpam: boolean; }
-
-const SPAM_URL_PATTERNS = /\.com|\.io|\.net|\.fi|\.xyz|http|:\/\//i
-const SPAM_BAIT_WORDS   = /\b(claim|airdrop|voucher|visit|invite)\b/i
-const SPAM_PREFIX       = /^[!@$]/
-
-function detectSpam(raw: Record<string, unknown>, name: string, symbol: string): boolean {
-  if (raw.possible_spam === true) return true
-  const haystack = `${name} ${symbol}`
-  if (SPAM_URL_PATTERNS.test(haystack)) return true
-  if (SPAM_BAIT_WORDS.test(haystack))   return true
-  if (SPAM_PREFIX.test(name.trim()) || SPAM_PREFIX.test(symbol.trim())) return true
-  return false
-}
 
 function TokenRow({ token, dim }: { token: Token; dim?: boolean }) {
   return (
@@ -83,7 +71,9 @@ export function TokenTable({ activeAddress, onTotalCalculated, onTokensLoaded }:
             const usd    = typeof t.usd_value === 'number' ? t.usd_value : 0;
             const name   = String(t.name   || 'Unknown')
             const symbol = String(t.symbol || '???')
-            const spam   = detectSpam(t, name, symbol)
+            // Trust the server-computed flag; re-run the shared heuristic as
+            // defense in depth in case the data came from an uncached path.
+            const spam   = flagSpam(t)
             if (!spam) sum += usd;
             return {
               name,

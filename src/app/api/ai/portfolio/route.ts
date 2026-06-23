@@ -17,11 +17,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Rate limit exceeded. Please wait before retrying.' }, { status: 429 });
   }
 
-  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: 'Google AI key not configured on server' }, { status: 500 });
-  }
-
   // Step 2: validate request body
   let body;
   try {
@@ -58,9 +53,20 @@ export async function POST(request: Request) {
       prompt: `Analyze this treasury portfolio. Top verified assets: ${topTokens.join(', ') || 'None'}. Risk Score: ${riskProfile.score}/100 (${riskProfile.level}).${spamStr} Provide a 2-sentence strategic recommendation. If spam tokens exist, briefly warn the user.`
     });
 
+    if (!result.success) {
+      // Risk engine is deterministic and local, so still return it; the UI can
+      // render risk without the LLM narrative.
+      return NextResponse.json({
+        insight: null,
+        risk: riskProfile,
+        providerTrace: result.providerTrace,
+      });
+    }
+
     return NextResponse.json({
       insight: result.content,
-      risk: riskProfile
+      risk: riskProfile,
+      providerTrace: result.providerTrace,
     });
   } catch (error: unknown) {
     console.error('[AI route error]', error); // server log only
