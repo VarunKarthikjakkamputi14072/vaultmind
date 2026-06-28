@@ -1,11 +1,16 @@
 'use client'
 import { useState } from 'react'
 import { TradeInsight } from './TradeInsight'
+import { SimulationPanel, type SimResponse } from './SimulationPanel'
 import { useAccount, useSendTransaction } from 'wagmi'
 import { parseUnits } from 'viem'
 import { MevRiskProfile } from '@/lib/ai/mev-analyzer'
 import { motion } from 'framer-motion'
-import { ArrowLeftRight, LockIcon, AlertTriangleIcon, ShieldAlertIcon } from 'lucide-react'
+import { ArrowLeftRight, LockIcon, AlertTriangleIcon, ShieldAlertIcon, FlaskConical } from 'lucide-react'
+
+// A well-funded address used to dry-run the swap when no wallet is connected, so
+// the simulation produces meaningful asset changes in the demo.
+const DEMO_SENDER = '0x28C6c06298d514Db089934071355E5743bf21d60';
 
 const cardVariants = {
   hidden:  { opacity: 0, y: 16 },
@@ -26,6 +31,8 @@ export function SwapWidget() {
   const [mevRisk, setMevRisk] = useState<MevRiskProfile | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [simulation, setSimulation] = useState<SimResponse | null>(null)
+  const [simulating, setSimulating] = useState(false)
 
   const handleGetQuoteAndAnalyze = async () => {
     if (!amount) return;
@@ -34,6 +41,7 @@ export function SwapWidget() {
     setInsight(null)
     setMevRisk(null)
     setQuote(null)
+    setSimulation(null)
 
     try {
       const amountInWei = parseUnits(amount, 18).toString()
@@ -56,6 +64,45 @@ export function SwapWidget() {
       setError(msg)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const runSimulation = async () => {
+    if (!quote) return;
+    setSimulating(true)
+    setError(null)
+    setSimulation(null)
+    try {
+      const simSender = address || DEMO_SENDER;
+      const amountInWei = parseUnits(amount, 18).toString()
+      // Build the real executable tx for this sender, then dry-run it.
+      const buildRes = await fetch(`/api/swap/build?src=${ETH_ADDRESS}&dst=${USDC_ADDRESS}&amount=${amountInWei}&from=${simSender}&slippage=1&chainId=1`);
+      const buildData = await buildRes.json();
+      if (!buildRes.ok) throw new Error(buildData.error || 'Failed to build transaction for simulation');
+
+      const simRes = await fetch('/api/swap/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tx: {
+            from: simSender,
+            to: buildData.tx.to,
+            data: buildData.tx.data,
+            value: String(buildData.tx.value ?? '0'),
+          },
+          chainId: '1',
+          expectedOut: quote.toAmount,
+          expectedSymbol: 'USDC',
+        }),
+      });
+      const simData = await simRes.json();
+      if (!simRes.ok) throw new Error(simData.error || 'Simulation failed');
+      setSimulation(simData);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Unknown error';
+      setError(msg)
+    } finally {
+      setSimulating(false)
     }
   }
 
@@ -130,16 +177,40 @@ export function SwapWidget() {
 
         <TradeInsight insightText={insight} mevRisk={mevRisk} isLoading={loading} />
 
+        <SimulationPanel data={simulation} isLoading={simulating} />
+
         <div className="flex flex-col gap-2 mt-4">
-          <button 
+          <button
             onClick={handleGetQuoteAndAnalyze}
             disabled={loading || !amount}
             className="w-full bg-[--bg-elevated] border border-[--bg-border] hover:bg-slate-700 disabled:opacity-50 text-white font-medium py-3 rounded-lg transition-colors"
           >
             Analyse Trade Risk
           </button>
-          
+
           {quote && (
+            <button
+              onClick={runSimulation}
+              disabled={simulating}
+              className="w-full bg-[--bg-elevated] border border-[--bg-border] hover:bg-slate-700 disabled:opacity-50 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <FlaskConical className="w-4 h-4" />
+              {simulating ? 'Simulating…' : simulation ? 'Re-run Dry Simulation' : 'Dry-Run Simulation'}
+            </button>
+          )}
+
+          {/* Critical simulation risk hard-blocks execution. */}
+          {quote && simulation?.risk.level === 'Critical' && (
+            <button
+              disabled
+              className="w-full py-4 rounded-xl font-semibold text-red-200 bg-red-950/60 border border-red-800 cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <ShieldAlertIcon className="w-4 h-4" />
+              Execution Blocked — Simulation Flagged Critical Risk
+            </button>
+          )}
+
+          {quote && simulation?.risk.level !== 'Critical' && (
             riskLevel === 'safe' ? (
               <button 
                 onClick={executeSwap}
